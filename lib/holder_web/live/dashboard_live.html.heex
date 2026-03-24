@@ -1,0 +1,142 @@
+<div class="space-y-6 animate-fade-in">
+  <!-- Top bar -->
+  <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center gap-3">
+      <button phx-click="refresh_quotes" disabled={@refresh_status == :loading} class="btn-ghost text-sm flex items-center gap-2">
+        <span class={"hero-arrow-path-solid w-4 h-4 #{if @refresh_status == :loading, do: "animate-spin"}"} />
+        {if @refresh_status == :loading, do: gettext("Atualizando..."), else: gettext("Atualizar Cotações")}
+      </button>
+
+      <span :if={@refresh_status == :success && @refresh_stats} class="flex items-center gap-1.5 text-xs text-buy">
+        <span class="hero-check-circle-solid w-3.5 h-3.5" />
+        BR: {@refresh_stats.br} &nbsp; US: {@refresh_stats.us} &nbsp; Crypto: {@refresh_stats.crypto}
+      </span>
+
+      <span :if={@refresh_status == :error} class="flex items-center gap-1.5 text-xs text-accent-rose">
+        <span class="hero-exclamation-circle-solid w-3.5 h-3.5" />
+        {gettext("Erro ao buscar cotações")}
+      </span>
+    </div>
+
+    <button phx-click="toggle_display" class="btn-ghost text-sm flex items-center gap-1.5 px-2.5 py-1.5">
+      <span class={"#{display_icon(@display_mode)} w-4 h-4"} />
+      <span class="text-xs font-mono">{display_label(@display_mode)}</span>
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight font-display">{gettext("Dashboard")}</h2>
+    <p class="text-text-muted text-sm mt-1">{gettext("Visão geral da sua carteira")}</p>
+  </div>
+
+  <!-- Top cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="glass-card p-5">
+      <p class="text-text-muted text-xs uppercase tracking-wider">{gettext("Patrimônio Total")}</p>
+      <p class="text-3xl font-bold mt-2 font-mono text-accent-emerald">
+        {mask(@summary.grand_total, &Portfolio.format_brl/1, 1.0, @display_mode)}
+      </p>
+      <p class="text-text-muted text-xs mt-2">
+        {if @summary.grand_total > 0,
+          do: gettext("%{count} classes com posição", count: Enum.count(@summary.classes, & &1.value > 0)),
+          else: gettext("Atualize as cotações para ver o total")}
+      </p>
+    </div>
+
+    <div class="glass-card p-5">
+      <p class="text-text-muted text-xs uppercase tracking-wider">{gettext("Classes para Aportar")}</p>
+      <div class="mt-2 space-y-1.5">
+        <%= for c <- Enum.filter(@summary.classes, & &1.status == "Buy" && &1.target > 0) |> Enum.take(4) do %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" style={"background: #{c.color}"} />
+              <span class="text-sm">{c.label}</span>
+            </div>
+            <span class="badge-buy text-[10px]">Buy</span>
+          </div>
+        <% end %>
+        <p :if={Enum.all?(@summary.classes, & &1.status != "Buy" or &1.target == 0)} class="text-text-muted text-sm">
+          {gettext("Carteira balanceada ou sem dados")}
+        </p>
+      </div>
+    </div>
+
+    <div class="glass-card p-5">
+      <p class="text-text-muted text-xs uppercase tracking-wider">{gettext("Câmbio")}</p>
+      <p class="text-3xl font-bold mt-2 font-mono">
+        {if @display_mode == :hidden, do: "•••••", else: "R$ #{:erlang.float_to_binary((@settings && @settings.dollar_rate) || 5.80, decimals: 2) |> String.replace(".", ",")}"}
+      </p>
+      <p class="text-text-muted text-xs mt-2">USD/BRL</p>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="glass-card p-5">
+      <h3 class="text-sm font-semibold text-text-secondary mb-4">{gettext("Alocação Atual")}</h3>
+      <div :if={@summary.grand_total > 0} class="flex items-center gap-4">
+        <div class="w-1/2 h-[220px]">
+          <canvas id="pie-chart" phx-hook="ChartHook" phx-update="ignore" data-config={Jason.encode!(pie_chart_config(@summary.classes))} />
+        </div>
+        <div class="flex-1 space-y-2">
+          <%= for c <- Enum.filter(@summary.classes, & &1.value > 0) do %>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={"background: #{c.color}"} />
+              <span class="text-text-secondary flex-1">{c.label}</span>
+              <span class="font-mono text-text-primary">{Portfolio.format_pct(c.current_pct)}</span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div :if={@summary.grand_total == 0} class="h-[220px] flex items-center justify-center text-text-muted text-sm">
+        {gettext("Atualize as cotações para ver o gráfico")}
+      </div>
+    </div>
+
+    <div class="glass-card p-5">
+      <h3 class="text-sm font-semibold text-text-secondary mb-4">{gettext("Atual vs Objetivo")}</h3>
+      <div :if={@summary.grand_total > 0} class="h-[220px]">
+        <canvas id="bar-chart" phx-hook="ChartHook" phx-update="ignore" data-config={Jason.encode!(bar_chart_config(@summary.classes))} />
+      </div>
+      <div :if={@summary.grand_total == 0} class="h-[220px] flex items-center justify-center text-text-muted text-sm">
+        {gettext("Sem dados para exibir")}
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset class cards -->
+  <div>
+    <h3 class="text-sm font-semibold text-text-secondary mb-3">{gettext("Classes de Ativos")}</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <%= for c <- Enum.filter(@summary.classes, & &1.target > 0) do %>
+        <button phx-click="navigate_detail" phx-value-class={c.key} class="glass-card-hover p-4 text-left group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full" style={"background: #{c.color}"} />
+              <span class="font-semibold text-sm">{c.label}</span>
+            </div>
+            <span class="hero-arrow-right-solid w-3.5 h-3.5 text-text-muted group-hover:text-accent-emerald transition-colors" />
+          </div>
+          <p class="font-mono text-lg font-bold">
+            {mask(c.value, &Portfolio.format_brl/1, c.current_pct, @display_mode)}
+          </p>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="text-text-muted">
+              {Portfolio.format_pct(c.current_pct)} / {Portfolio.format_pct(c.target)}
+            </span>
+            <span class={if c.status == "Buy", do: "badge-buy text-[10px]", else: "badge-hold text-[10px]"}>
+              {c.status}
+            </span>
+          </div>
+          <div class="mt-2 h-1 bg-surface-3 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-500"
+              style={"width: #{min(Float.round(c.current_pct / max(c.target, 0.001) * 100, 0), 100)}%; background: #{c.color}"}
+            />
+          </div>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>

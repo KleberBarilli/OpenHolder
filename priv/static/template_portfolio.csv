@@ -1,0 +1,26 @@
+asset_class,ticker,name,sector,asset_type,qty,price,value,target_pct,score,liquidity
+acoes,PETR4,,Petróleo,,100,0,0,0.20,,
+acoes,VALE3,,Mineração,,50,0,0,0.20,,
+acoes,ITUB4,,Bancos,,80,0,0,0.20,,
+acoes,WEGE3,,Motores,,30,0,0,0.15,,
+acoes,ABEV3,,Bebidas,,110,0,0,0.15,,
+acoes,BBAS3,,Bancos,,63,0,0,0.10,,
+fiis,HGLG11,,Logística,Tijolo,20,0,0,0.25,,
+fiis,XPLG11,,Logística,Tijolo,17,0,0,0.25,,
+fiis,KNRI11,,Híbrido,Tijolo,10,0,0,0.25,,
+fiis,KNCR11,,Crédito,Papel,50,0,0,0.25,,
+stocks,AAPL,,Technology,,5,0,0,0.25,11,
+stocks,MSFT,,Technology,,3,0,0,0.25,11,
+stocks,AMZN,,E-Commerce,,2,0,0,0.25,9,
+stocks,GOOGL,,Technology,,4,0,0,0.25,9,
+reits,O,,Retail,,10,0,0,0.35,9,
+reits,SPG,,Retail,,2,0,0,0.35,11,
+reits,STAG,,Industrial,,5,0,0,0.30,11,
+etfs,VOO,,S&P 500,,3,0,0,0.50,11,
+etfs,VNQ,,REITs,,5,0,0,0.30,7,
+etfs,VT,,Global,,4,0,0,0.20,5,
+crypto,BTC,,,,0.01,0,0,0.80,,
+crypto,ETH,,,,0.1,0,0,0.20,,
+rendaFixa,,Tesouro SELIC 2029,,,0,0,10000,0,,Boa
+rendaFixa,,Tesouro IPCA 2035,,,0,0,5000,0,,Regular
+rendaFixa,,CDB 100% CDI,,,0,0,3000,0,,Boa

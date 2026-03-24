@@ -1,0 +1,399 @@
+## English translations for Holder Dashboard
+msgid ""
+msgstr ""
+"Language: en\n"
+
+## Dashboard
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Visão geral da sua carteira"
+msgstr "Portfolio overview"
+
+msgid "Atualizar Cotações"
+msgstr "Refresh Quotes"
+
+msgid "Atualizando..."
+msgstr "Refreshing..."
+
+msgid "Erro ao buscar cotações"
+msgstr "Error fetching quotes"
+
+msgid "Patrimônio Total"
+msgstr "Total Equity"
+
+msgid "Atualize as cotações para ver o total"
+msgstr "Refresh quotes to see the total"
+
+msgid "%{count} classes com posição"
+msgstr "%{count} classes with position"
+
+msgid "Classes para Aportar"
+msgstr "Classes to Invest"
+
+msgid "Carteira balanceada ou sem dados"
+msgstr "Balanced portfolio or no data"
+
+msgid "Câmbio"
+msgstr "Exchange Rate"
+
+msgid "Alocação Atual"
+msgstr "Current Allocation"
+
+msgid "Atualize as cotações para ver o gráfico"
+msgstr "Refresh quotes to see the chart"
+
+msgid "Atual vs Objetivo"
+msgstr "Current vs Target"
+
+msgid "Sem dados para exibir"
+msgstr "No data to display"
+
+msgid "Classes de Ativos"
+msgstr "Asset Classes"
+
+## Chart labels
+msgid "Atual"
+msgstr "Current"
+
+msgid "Objetivo"
+msgstr "Target"
+
+## ClassDetail
+msgid "Ativo"
+msgstr "Asset"
+
+msgid "Ticker"
+msgstr "Ticker"
+
+msgid "Setor"
+msgstr "Sector"
+
+msgid "Valor"
+msgstr "Value"
+
+msgid "Valor (R$)"
+msgstr "Value (R$)"
+
+msgid "Liquidez"
+msgstr "Liquidity"
+
+msgid "Cotação"
+msgstr "Price"
+
+msgid "Qtd"
+msgstr "Qty"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "% Obj"
+msgstr "% Target"
+
+msgid "Nota"
+msgstr "Score"
+
+msgid "Editar"
+msgstr "Edit"
+
+msgid "Salvar"
+msgstr "Save"
+
+msgid "Nome"
+msgstr "Name"
+
+msgid "Quantidade"
+msgstr "Quantity"
+
+msgid "% Objetivo"
+msgstr "% Target"
+
+msgid "Adicionar Ativo"
+msgstr "Add Asset"
+
+msgid "Remover este ativo?"
+msgstr "Remove this asset?"
+
+msgid "%{count} ativos"
+msgstr "%{count} assets"
+
+msgid "Diagrama do Cerrado — Nota:"
+msgstr "Cerrado Diagram — Score:"
+
+## Rebalance
+msgid "Rebalanceamento"
+msgstr "Rebalancing"
+
+msgid "Simule aportes e veja onde investir"
+msgstr "Simulate contributions and see where to invest"
+
+msgid "Valor do Aporte (R$)"
+msgstr "Contribution Amount (R$)"
+
+msgid "Classes para aportar"
+msgstr "Classes to invest"
+
+msgid "Sugestão de Aporte"
+msgstr "Contribution Suggestion"
+
+msgid "Atual:"
+msgstr "Current:"
+
+msgid "Objetivo:"
+msgstr "Target:"
+
+msgid "%{pct}% do aporte"
+msgstr "%{pct}% of contribution"
+
+msgid "Patrimônio após aporte"
+msgstr "Equity after contribution"
+
+msgid "Atualize as cotações dos ativos primeiro"
+msgstr "Refresh asset quotes first"
+
+msgid "Digite um valor de aporte para ver a sugestão"
+msgstr "Enter a contribution amount to see the suggestion"
+
+msgid "Metas Macro"
+msgstr "Macro Targets"
+
+## Diagrama
+msgid "Diagrama do Cerrado"
+msgstr "Cerrado Diagram"
+
+msgid "Avalie seus ativos com critérios fundamentalistas"
+msgstr "Evaluate your assets with fundamentalist criteria"
+
+msgid "Ações / Stocks"
+msgstr "Stocks (BR)"
+
+msgid "FIIs / REITs"
+msgstr "FIIs / REITs"
+
+msgid "Excelente (9-11)"
+msgstr "Excellent (9-11)"
+
+msgid "Bom (5-8)"
+msgstr "Good (5-8)"
+
+msgid "Fraco (<5)"
+msgstr "Weak (<5)"
+
+msgid "Critérios"
+msgstr "Criteria"
+
+## Settings
+msgid "Configurações"
+msgstr "Settings"
+
+msgid "Ajuste parâmetros gerais e metas de alocação"
+msgstr "Adjust general parameters and allocation targets"
+
+msgid "API de Cotações (BrAPI)"
+msgstr "Quotes API (BrAPI)"
+
+msgid "Usamos a"
+msgstr "We use"
+
+msgid "para buscar cotações de ações BR, FIIs, Stocks US, ETFs, REITs e crypto. O plano gratuito dá 15.000 requisições/mês — mais que suficiente para uso pessoal."
+msgstr "to fetch quotes for BR stocks, FIIs, US Stocks, ETFs, REITs and crypto. The free plan gives 15,000 requests/month — more than enough for personal use."
+
+msgid "Token BrAPI"
+msgstr "BrAPI Token"
+
+msgid "Cole seu token aqui"
+msgstr "Paste your token here"
+
+msgid "Token salvo no servidor — nunca exposto no browser."
+msgstr "Token saved on server — never exposed in browser."
+
+msgid "Geral"
+msgstr "General"
+
+msgid "Câmbio USD/BRL"
+msgstr "Exchange Rate USD/BRL"
+
+msgid "Crie e edite suas classes de ativos. Cada classe agrupa ativos do mesmo tipo."
+msgstr "Create and edit your asset classes. Each class groups assets of the same type."
+
+msgid "Desativar"
+msgstr "Disable"
+
+msgid "Ativar"
+msgstr "Enable"
+
+msgid "Remover esta classe e todos os seus ativos?"
+msgstr "Remove this class and all its assets?"
+
+msgid "Cor"
+msgstr "Color"
+
+msgid "Moeda"
+msgstr "Currency"
+
+msgid "Adicionar"
+msgstr "Add"
+
+msgid "Metas Macro (%%)"
+msgstr "Macro Targets (%%)"
+
+msgid "As metas devem somar 100%%. Atualmente somam %{total}%%."
+msgstr "Targets must sum to 100%%. Currently %{total}%%."
+
+msgid "Importar"
+msgstr "Import"
+
+msgid "Importar Carteira (CSV)"
+msgstr "Import Portfolio (CSV)"
+
+msgid "Importe seus ativos via arquivo CSV."
+msgstr "Import your assets via CSV file."
+
+msgid "Baixe o template"
+msgstr "Download template"
+
+msgid "e preencha com seus dados."
+msgstr "and fill it with your data."
+
+msgid "Colunas: asset_class, ticker, name, sector, asset_type, qty, price, value, target_pct, score, liquidity"
+msgstr "Columns: asset_class, ticker, name, sector, asset_type, qty, price, value, target_pct, score, liquidity"
+
+msgid "Dados"
+msgstr "Data"
+
+msgid "Exportar JSON"
+msgstr "Export JSON"
+
+msgid "Resetar todos os dados?"
+msgstr "Reset all data?"
+
+msgid "Resetar Dados"
+msgstr "Reset Data"
+
+msgid "Os dados ficam salvos no banco SQLite do servidor. Use Export para fazer backup."
+msgstr "Data is stored in the server's SQLite database. Use Export to back up."
+
+msgid "Dados resetados com sucesso"
+msgstr "Data reset successfully"
+
+msgid "%{count} ativos importados com sucesso!"
+msgstr "%{count} assets imported successfully!"
+
+msgid "Erro: %{reason}"
+msgstr "Error: %{reason}"
+
+msgid "Selecione um arquivo CSV"
+msgstr "Select a CSV file"
+
+## Sidebar / Layout
+msgid "Classes"
+msgstr "Classes"
+
+msgid "Dados salvos em SQLite"
+msgstr "Data stored in SQLite"
+
+msgid "Ações"
+msgstr "Stocks (BR)"
+
+msgid "FIIs"
+msgstr "FIIs"
+
+msgid "Stocks"
+msgstr "Stocks (US)"
+
+msgid "REITs"
+msgstr "REITs"
+
+msgid "ETFs"
+msgstr "ETFs"
+
+msgid "Crypto"
+msgstr "Crypto"
+
+msgid "Renda Fixa"
+msgstr "Fixed Income"
+
+## Display toggle
+msgid "Oculto"
+msgstr "Hidden"
+
+## Flash
+msgid "Conexão perdida"
+msgstr "Connection lost"
+
+msgid "Reconectando..."
+msgstr "Reconnecting..."
+
+msgid "Erro no servidor"
+msgstr "Server error"
+
+## Core components
+msgid "close"
+msgstr "close"
+
+msgid "Actions"
+msgstr "Actions"
+
+## Asset class management
+msgid "Classe atualizada!"
+msgstr "Class updated!"
+
+msgid "Classe removida"
+msgstr "Class removed"
+
+## Asset save
+msgid "Ativo salvo!"
+msgstr "Asset saved!"
+
+## Assisted CSV Import
+msgid "Analisar CSV"
+msgstr "Analyze CSV"
+
+msgid "Revisão"
+msgstr "Review"
+
+msgid "ativos encontrados"
+msgstr "assets found"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Nova classe"
+msgstr "New class"
+
+msgid "Classe existente"
+msgstr "Existing class"
+
+msgid "Classes novas detectadas — configure antes de importar:"
+msgstr "New classes detected — configure before importing:"
+
+msgid "Ignorada"
+msgstr "Skipped"
+
+msgid "Incluída"
+msgstr "Included"
+
+msgid "Confirmar importação"
+msgstr "Confirm import"
+
+msgid "Importação concluída!"
+msgstr "Import completed!"
+
+msgid "ativos importados"
+msgstr "assets imported"
+
+msgid "ignorados"
+msgstr "skipped"
+
+msgid "Por classe:"
+msgstr "By class:"
+
+msgid "ativos"
+msgstr "assets"
+
+msgid "Novo import"
+msgstr "New import"
+
+## Rate limit
+msgid "Aguarde %{min} min antes de atualizar novamente"
+msgstr "Wait %{min} min before refreshing again"

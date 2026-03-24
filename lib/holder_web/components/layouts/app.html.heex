@@ -1,0 +1,88 @@
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <aside class="hidden lg:flex flex-col w-64 bg-surface-1 border-r border-surface-3 p-6 flex-shrink-0">
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-9 h-9 rounded-xl bg-accent-emerald/15 flex items-center justify-center">
+          <span class="hero-chart-bar-square-solid w-5 h-5 text-accent-emerald" />
+        </div>
+        <div>
+          <h1 class="font-bold text-accent-emerald text-lg font-display">Holder</h1>
+          <p class="text-[10px] text-text-muted">Dashboard v2</p>
+        </div>
+      </div>
+      <div class="glow-line mt-3"></div>
+    </div>
+
+    <% current = assigns[:current_path] || "/" %>
+
+    <nav class="flex-1 space-y-1">
+      <.link
+        navigate={~p"/"}
+        class={"flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all #{if current == "/", do: "bg-accent-emerald/10 text-accent-emerald font-semibold", else: "text-text-muted hover:text-text-secondary hover:bg-surface-2"}"}
+      >
+        <span class="hero-chart-pie-solid w-4 h-4" />
+        {gettext("Dashboard")}
+      </.link>
+      <.link
+        navigate={~p"/rebalance"}
+        class={"flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all #{if current == "/rebalance", do: "bg-accent-emerald/10 text-accent-emerald font-semibold", else: "text-text-muted hover:text-text-secondary hover:bg-surface-2"}"}
+      >
+        <span class="hero-calculator-solid w-4 h-4" />
+        {gettext("Rebalanceamento")}
+      </.link>
+      <.link
+        navigate={~p"/diagrama"}
+        class={"flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all #{if current == "/diagrama", do: "bg-accent-emerald/10 text-accent-emerald font-semibold", else: "text-text-muted hover:text-text-secondary hover:bg-surface-2"}"}
+      >
+        <span class="hero-clipboard-document-check-solid w-4 h-4" />
+        {gettext("Diagrama do Cerrado")}
+      </.link>
+      <.link
+        navigate={~p"/settings"}
+        class={"flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all #{if current == "/settings", do: "bg-accent-emerald/10 text-accent-emerald font-semibold", else: "text-text-muted hover:text-text-secondary hover:bg-surface-2"}"}
+      >
+        <span class="hero-cog-6-tooth-solid w-4 h-4" />
+        {gettext("Configurações")}
+      </.link>
+
+      <div :if={assigns[:asset_classes]} class="pt-4">
+        <p class="text-[10px] text-text-muted uppercase tracking-wider px-3 mb-2">{gettext("Classes")}</p>
+        <.link
+          :for={ac <- @asset_classes}
+          navigate={~p"/detail/#{ac.key}"}
+          class={"flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-all #{if current == "/detail/#{ac.key}", do: "bg-surface-2 text-text-primary", else: "text-text-muted hover:text-text-secondary hover:bg-surface-2"}"}
+        >
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style={"background: #{ac.color}"} />
+          {ac.label}
+        </.link>
+      </div>
+    </nav>
+
+    <!-- Locale switcher -->
+    <div class="flex items-center gap-1 mt-4">
+      <.link href={~p"/locale/pt_BR"} method="put" class={"px-2 py-1 rounded text-[10px] font-semibold transition-all #{if assigns[:locale] == "pt_BR" or !assigns[:locale], do: "bg-accent-emerald/15 text-accent-emerald", else: "text-text-muted hover:text-text-secondary"}"}>
+        PT
+      </.link>
+      <.link href={~p"/locale/en"} method="put" class={"px-2 py-1 rounded text-[10px] font-semibold transition-all #{if assigns[:locale] == "en", do: "bg-accent-emerald/15 text-accent-emerald", else: "text-text-muted hover:text-text-secondary"}"}>
+        EN
+      </.link>
+    </div>
+    <div class="text-[10px] text-text-muted mt-2">
+      {gettext("Dados salvos em SQLite")}
+    </div>
+  </aside>
+
+  <!-- Mobile header -->
+  <div class="lg:hidden fixed top-0 left-0 right-0 z-20 flex items-center gap-3 p-4 border-b border-surface-3 bg-surface-0">
+    <span class="font-semibold text-accent-emerald font-display">Holder</span>
+  </div>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-y-auto lg:pt-0 pt-14">
+    <div class="p-4 lg:p-8 max-w-[1400px] mx-auto">
+      <.flash_group flash={@flash} />
+      {@inner_content}
+    </div>
+  </main>
+</div>

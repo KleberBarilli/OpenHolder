@@ -1,0 +1,314 @@
+<div class="space-y-6 animate-fade-in">
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight font-display">{gettext("Configurações")}</h2>
+    <p class="text-text-muted text-sm mt-1">{gettext("Ajuste parâmetros gerais e metas de alocação")}</p>
+  </div>
+
+  <!-- BrAPI Token -->
+  <div class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-semibold text-text-secondary">{gettext("API de Cotações (BrAPI)")}</h3>
+    <p class="text-xs text-text-muted">
+      {gettext("Usamos a")} <a href="https://brapi.dev" target="_blank" rel="noopener" class="text-accent-emerald underline">brapi.dev</a> {gettext("para buscar cotações de ações BR, FIIs, Stocks US, ETFs, REITs e crypto. O plano gratuito dá 15.000 requisições/mês — mais que suficiente para uso pessoal.")}
+    </p>
+    <div class="max-w-md">
+      <label class="text-xs text-text-muted uppercase tracking-wider">{gettext("Token BrAPI")}</label>
+      <form phx-submit="update_token" class="flex gap-2 mt-1">
+        <input
+          type="password"
+          class="input-field flex-1"
+          name="brapi_token"
+          placeholder={gettext("Cole seu token aqui")}
+          value={@settings && @settings.brapi_token || ""}
+        />
+        <button type="submit" class="btn-primary text-xs">{gettext("Salvar")}</button>
+      </form>
+      <p class="text-[10px] text-text-muted mt-1.5">
+        {gettext("Token salvo no servidor — nunca exposto no browser.")}
+      </p>
+    </div>
+  </div>
+
+  <!-- General -->
+  <div class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-semibold text-text-secondary">{gettext("Geral")}</h3>
+    <form phx-change="update_setting" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label class="text-xs text-text-muted uppercase tracking-wider">{gettext("Câmbio USD/BRL")}</label>
+        <input type="number" step="0.01" class="input-field w-full mt-1" name="dollar_rate"
+          value={@settings && @settings.dollar_rate || 5.80} />
+      </div>
+      <div>
+        <label class="text-xs text-text-muted uppercase tracking-wider">IOF</label>
+        <input type="number" step="0.001" class="input-field w-full mt-1" name="iof"
+          value={@settings && @settings.iof || 0.035} />
+      </div>
+      <div>
+        <label class="text-xs text-text-muted uppercase tracking-wider">Spread</label>
+        <input type="number" step="0.001" class="input-field w-full mt-1" name="spread"
+          value={@settings && @settings.spread || 0.01} />
+      </div>
+    </form>
+  </div>
+
+  <!-- Asset Classes -->
+  <div class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-semibold text-text-secondary">{gettext("Classes de Ativos")}</h3>
+    <p class="text-xs text-text-muted">{gettext("Crie e edite suas classes de ativos. Cada classe agrupa ativos do mesmo tipo.")}</p>
+
+    <div class="space-y-2">
+      <%= for ac <- @all_classes do %>
+        <div class={"flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all #{if ac.enabled, do: "border-surface-3 bg-surface-2/50", else: "border-surface-4/50 bg-surface-2/20 opacity-50"}"}>
+          <span class="w-3 h-3 rounded-full flex-shrink-0" style={"background: #{ac.color}"} />
+          <span class="font-semibold text-sm flex-1">{ac.label}</span>
+          <span class="text-[10px] text-text-muted font-mono">{ac.key}</span>
+          <span class="text-[10px] text-text-muted">{ac.currency}</span>
+          <button phx-click="toggle_class" phx-value-id={ac.id} class="btn-ghost px-2 py-1 text-[10px]" title={if ac.enabled, do: gettext("Desativar"), else: gettext("Ativar")}>
+            <span class={if ac.enabled, do: "hero-eye-solid w-3.5 h-3.5 text-buy", else: "hero-eye-slash-solid w-3.5 h-3.5"} />
+          </button>
+          <button phx-click="toggle_edit_class" phx-value-id={ac.id} class="btn-ghost px-2 py-1 text-[10px]">
+            <span class="hero-pencil-solid w-3.5 h-3.5" />
+          </button>
+          <button phx-click="delete_class" phx-value-id={ac.id} class="btn-ghost px-2 py-1 text-[10px] text-accent-rose" data-confirm={gettext("Remover esta classe e todos os seus ativos?")}>
+            <span class="hero-trash-solid w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <!-- Edit row -->
+        <form :if={@edit_class_id == ac.id} phx-submit="update_class" class="px-3 py-3 rounded-lg bg-surface-2/80 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-in">
+          <input type="hidden" name="id" value={ac.id} />
+          <div>
+            <label class="text-[10px] text-text-muted uppercase">Label</label>
+            <input class="input-field w-full mt-1" name="label" value={ac.label} />
+          </div>
+          <div>
+            <label class="text-[10px] text-text-muted uppercase">{gettext("Cor")}</label>
+            <input type="color" class="w-full mt-1 h-9 rounded-lg bg-surface-2 border border-surface-4 cursor-pointer" name="color" value={ac.color} />
+          </div>
+          <div>
+            <label class="text-[10px] text-text-muted uppercase">{gettext("Moeda")}</label>
+            <select class="input-field w-full mt-1" name="currency">
+              <option value="BRL" selected={ac.currency == "BRL"}>BRL</option>
+              <option value="USD" selected={ac.currency == "USD"}>USD</option>
+              <option value="EUR" selected={ac.currency == "EUR"}>EUR</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="btn-primary text-xs">{gettext("Salvar")}</button>
+          </div>
+        </form>
+      <% end %>
+    </div>
+
+    <!-- Add new class -->
+    <form phx-submit="add_class" class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-surface-3">
+      <div>
+        <label class="text-[10px] text-text-muted uppercase">Key</label>
+        <input class="input-field w-full mt-1" name="key" placeholder="ex: commodities" required />
+      </div>
+      <div>
+        <label class="text-[10px] text-text-muted uppercase">Label</label>
+        <input class="input-field w-full mt-1" name="label" placeholder="ex: Commodities" required />
+      </div>
+      <div>
+        <label class="text-[10px] text-text-muted uppercase">{gettext("Cor")}</label>
+        <input type="color" class="w-full mt-1 h-9 rounded-lg bg-surface-2 border border-surface-4 cursor-pointer" name="color" value="#64748b" />
+      </div>
+      <div>
+        <label class="text-[10px] text-text-muted uppercase">{gettext("Moeda")}</label>
+        <select class="input-field w-full mt-1" name="currency">
+          <option value="BRL">BRL</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button type="submit" class="btn-primary text-xs flex items-center gap-1.5">
+          <span class="hero-plus-solid w-3.5 h-3.5" /> {gettext("Adicionar")}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Macro targets -->
+  <div class="glass-card p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-text-secondary">{gettext("Metas Macro (%%)")}</h3>
+      <span class={"text-xs font-mono font-bold px-2 py-1 rounded #{if abs(@total_target - 1.0) < 0.001, do: "text-buy bg-buy/10", else: "text-accent-rose bg-accent-rose/10"}"}>
+        Total: {Float.round(@total_target * 100, 0) |> trunc()}%
+      </span>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <%= for e <- @all_classes |> Enum.filter(& &1.enabled) do %>
+        <div>
+          <label class="text-xs text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full" style={"background: #{e.color}"} />
+            {e.label}
+          </label>
+          <input
+            type="number" step="1" min="0" max="100"
+            class="input-field w-full mt-1 font-mono"
+            value={Float.round((Map.get(@targets, e.key, 0.0)) * 100, 0) |> trunc()}
+            phx-blur="update_target"
+            phx-value-class={e.key}
+          />
+        </div>
+      <% end %>
+    </div>
+
+    <p :if={abs(@total_target - 1.0) > 0.001} class="text-xs text-accent-rose">
+      {gettext("As metas devem somar 100%%. Atualmente somam %{total}%%.", total: Float.round(@total_target * 100, 0) |> trunc())}
+    </p>
+  </div>
+
+  <!-- Import CSV — 3-step assisted flow -->
+  <div class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-semibold text-text-secondary">{gettext("Importar Carteira (CSV)")}</h3>
+
+    <!-- Step 1: Upload -->
+    <div :if={@import_step == nil}>
+      <p class="text-xs text-text-muted mb-3">
+        {gettext("Importe seus ativos via arquivo CSV.")}
+        <a href={~p"/template_portfolio.csv"} download class="text-accent-emerald underline">{gettext("Baixe o template")}</a>
+        {gettext("e preencha com seus dados.")}
+      </p>
+
+      <form phx-submit="upload_csv" phx-change="validate_csv" class="space-y-3">
+        <div class="flex items-center gap-3">
+          <.live_file_input upload={@uploads.csv} class="input-field text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accent-emerald/15 file:text-accent-emerald hover:file:bg-accent-emerald/25" />
+          <button type="submit" class="btn-primary text-xs flex items-center gap-1.5">
+            <span class="hero-arrow-up-tray-solid w-3.5 h-3.5" /> {gettext("Analisar CSV")}
+          </button>
+        </div>
+        <%= for entry <- @uploads.csv.entries do %>
+          <div class="text-xs text-text-secondary flex items-center gap-2">
+            <span class="hero-document-text-solid w-4 h-4 text-accent-emerald" />
+            {entry.client_name} ({Float.round(entry.client_size / 1024, 1)} KB)
+          </div>
+        <% end %>
+      </form>
+      <p class="text-[10px] text-text-muted mt-2">
+        {gettext("Colunas: asset_class, ticker, name, sector, asset_type, qty, price, value, target_pct, score, liquidity")}
+      </p>
+    </div>
+
+    <!-- Step 2: Review -->
+    <div :if={@import_step == :review && @import_preview} class="space-y-4 animate-fade-in">
+      <div class="flex items-center justify-between">
+        <p class="text-sm font-semibold text-text-primary">
+          <span class="hero-magnifying-glass-solid w-4 h-4 text-accent-emerald inline" />
+          {gettext("Revisão")} — {@import_preview.total} {gettext("ativos encontrados")}
+        </p>
+        <button phx-click="cancel_import" class="btn-ghost text-xs">{gettext("Cancelar")}</button>
+      </div>
+
+      <!-- Summary by class -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        <%= for s <- @import_preview.summary do %>
+          <div class={"rounded-lg px-3 py-2 border #{if s.new, do: "border-accent-amber/40 bg-accent-amber/5", else: "border-surface-3 bg-surface-2/50"}"}>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold">{s.class}</span>
+              <span class="text-xs font-mono text-text-muted">{s.count}</span>
+            </div>
+            <span :if={s.new} class="text-[10px] text-accent-amber">{gettext("Nova classe")}</span>
+            <span :if={!s.new} class="text-[10px] text-text-muted">{gettext("Classe existente")}</span>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Configure new classes -->
+      <div :if={@import_new_classes != []} class="space-y-3">
+        <p class="text-xs font-semibold text-accent-amber uppercase tracking-wider">
+          <span class="hero-exclamation-triangle-solid w-3.5 h-3.5 inline" />
+          {gettext("Classes novas detectadas — configure antes de importar:")}
+        </p>
+
+        <%= for c <- @import_new_classes do %>
+          <div class={"rounded-lg border px-4 py-3 space-y-2 #{if c.skip, do: "border-surface-4/50 opacity-40", else: "border-accent-amber/30 bg-accent-amber/5"}"}>
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-text-muted">{c.key}</span>
+              <button phx-click="toggle_skip_class" phx-value-key={c.key} class={"btn-ghost text-xs px-2 py-1 #{if c.skip, do: "text-accent-rose", else: "text-buy"}"}>
+                {if c.skip, do: gettext("Ignorada"), else: gettext("Incluída")}
+              </button>
+            </div>
+            <div :if={!c.skip} class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div>
+                <label class="text-[10px] text-text-muted uppercase">Label</label>
+                <input class="input-field w-full mt-1 text-xs" value={c.label}
+                  phx-blur="update_new_class" phx-value-key={c.key} name="label" />
+              </div>
+              <div>
+                <label class="text-[10px] text-text-muted uppercase">{gettext("Cor")}</label>
+                <input type="color" class="w-full mt-1 h-8 rounded bg-surface-2 border border-surface-4 cursor-pointer"
+                  value={c.color} phx-blur="update_new_class" phx-value-key={c.key} name="color" />
+              </div>
+              <div>
+                <label class="text-[10px] text-text-muted uppercase">{gettext("Moeda")}</label>
+                <select class="input-field w-full mt-1 text-xs"
+                  phx-change="update_new_class" phx-value-key={c.key} name="currency">
+                  <option value="BRL" selected={c.currency == "BRL"}>BRL</option>
+                  <option value="USD" selected={c.currency == "USD"}>USD</option>
+                  <option value="EUR" selected={c.currency == "EUR"}>EUR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <button phx-click="confirm_import" class="btn-primary text-sm flex items-center gap-2 w-full justify-center">
+        <span class="hero-check-circle-solid w-4 h-4" />
+        {gettext("Confirmar importação")}
+      </button>
+    </div>
+
+    <!-- Step 3: Results -->
+    <div :if={@import_step == :done && @import_results} class="space-y-4 animate-fade-in">
+      <div class="flex items-center gap-2">
+        <span class="hero-check-circle-solid w-5 h-5 text-buy" />
+        <p class="text-sm font-semibold text-buy">{gettext("Importação concluída!")}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="glass-card p-4 text-center">
+          <p class="text-3xl font-bold font-mono text-accent-emerald">{@import_results.imported}</p>
+          <p class="text-xs text-text-muted">{gettext("ativos importados")}</p>
+        </div>
+        <div class="glass-card p-4 text-center">
+          <p class="text-3xl font-bold font-mono text-text-muted">{@import_results.skipped}</p>
+          <p class="text-xs text-text-muted">{gettext("ignorados")}</p>
+        </div>
+      </div>
+
+      <div :if={@import_results.by_class != %{}} class="space-y-1">
+        <p class="text-xs text-text-muted uppercase tracking-wider font-semibold">{gettext("Por classe:")}</p>
+        <%= for {class, count} <- @import_results.by_class do %>
+          <div class="flex items-center justify-between text-xs px-3 py-1.5 rounded bg-surface-2/50">
+            <span class="font-semibold">{class}</span>
+            <span class="font-mono text-accent-emerald">{count} {gettext("ativos")}</span>
+          </div>
+        <% end %>
+      </div>
+
+      <button phx-click="cancel_import" class="btn-ghost text-sm w-full text-center">
+        {gettext("Novo import")}
+      </button>
+    </div>
+  </div>
+
+  <!-- Data management -->
+  <div class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-semibold text-text-secondary">{gettext("Dados")}</h3>
+    <div class="flex flex-wrap gap-3">
+      <button phx-click="export" class="btn-ghost text-sm flex items-center gap-2">
+        <span class="hero-arrow-down-tray-solid w-4 h-4" /> {gettext("Exportar JSON")}
+      </button>
+      <button phx-click="reset" class="btn-ghost text-sm flex items-center gap-2 text-accent-rose hover:bg-accent-rose/10" data-confirm={gettext("Resetar todos os dados?")}>
+        <span class="hero-arrow-path-solid w-4 h-4" /> {gettext("Resetar Dados")}
+      </button>
+    </div>
+    <p class="text-xs text-text-muted">
+      {gettext("Os dados ficam salvos no banco SQLite do servidor. Use Export para fazer backup.")}
+    </p>
+  </div>
+</div>

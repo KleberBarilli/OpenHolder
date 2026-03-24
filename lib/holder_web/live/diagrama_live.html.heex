@@ -1,0 +1,106 @@
+<div class="space-y-6 animate-fade-in">
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight font-display">{gettext("Diagrama do Cerrado")}</h2>
+    <p class="text-text-muted text-sm mt-1">{gettext("Avalie seus ativos com critérios fundamentalistas")}</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-4 border-b border-surface-3">
+    <button phx-click="switch_tab" phx-value-tab="acoes" class={if @tab == "acoes", do: "tab-active", else: "tab-inactive"}>
+      {gettext("Ações / Stocks")}
+    </button>
+    <button phx-click="switch_tab" phx-value-tab="fiis" class={if @tab == "fiis", do: "tab-active", else: "tab-inactive"}>
+      {gettext("FIIs / REITs")}
+    </button>
+  </div>
+
+  <!-- Score distribution -->
+  <% dist = score_distribution(@assets) %>
+  <div class="grid grid-cols-3 gap-4">
+    <div class="glass-card p-4 text-center">
+      <p class="text-3xl font-bold font-mono text-buy">{dist.excellent}</p>
+      <p class="text-xs text-text-muted mt-1">{gettext("Excelente (9-11)")}</p>
+    </div>
+    <div class="glass-card p-4 text-center">
+      <p class="text-3xl font-bold font-mono text-accent-amber">{dist.good}</p>
+      <p class="text-xs text-text-muted mt-1">{gettext("Bom (5-8)")}</p>
+    </div>
+    <div class="glass-card p-4 text-center">
+      <p class="text-3xl font-bold font-mono text-accent-rose">{dist.weak}</p>
+      <p class="text-xs text-text-muted mt-1">{gettext("Fraco (<5)")}</p>
+    </div>
+  </div>
+
+  <!-- Criteria reference -->
+  <details class="glass-card p-4">
+    <summary class="text-xs text-text-muted cursor-pointer font-semibold uppercase tracking-wider">
+      {gettext("Critérios")} ({length(criteria_for(@tab))})
+    </summary>
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <%= for cr <- criteria_for(@tab) do %>
+        <div class="text-xs text-text-secondary">
+          <span class="font-semibold">{cr.label}</span> — {cr.q}
+        </div>
+      <% end %>
+    </div>
+  </details>
+
+  <!-- Asset cards -->
+  <div class="space-y-3">
+    <%= for asset <- @assets do %>
+      <% score = Portfolio.compute_score(asset) %>
+      <% scores_map = Portfolio.get_scores_map(asset.id) %>
+      <div class="glass-card overflow-hidden">
+        <button phx-click="toggle_expand" phx-value-id={asset.id} class="w-full p-4 flex items-center gap-4 hover:bg-surface-2/50 transition-colors">
+          <div class={"w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold font-mono #{cond do
+            score == "SN" -> "bg-surface-3 text-text-muted"
+            is_integer(score) and score >= 9 -> "bg-buy/15 text-buy"
+            is_integer(score) and score >= 5 -> "bg-accent-amber/15 text-accent-amber"
+            true -> "bg-accent-rose/15 text-accent-rose"
+          end}"}>
+            {score}
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-mono font-semibold">{asset.ticker}</p>
+            <p class="text-xs text-text-muted">{asset.sector}</p>
+          </div>
+          <div class="hidden sm:flex gap-1">
+            <%= for cr <- criteria_for(@tab) do %>
+              <% val = Map.get(scores_map, cr.id, 0) %>
+              <span class={"w-2 h-2 rounded-full #{cond do
+                val == 1 -> "bg-buy"
+                val == -1 -> "bg-accent-rose"
+                true -> "bg-surface-4"
+              end}"} title={cr.label} />
+            <% end %>
+          </div>
+          <span class={"w-4 h-4 text-text-muted transition-transform #{if @expanded_id == asset.id, do: "rotate-180"} hero-chevron-down-solid"} />
+        </button>
+
+        <div :if={@expanded_id == asset.id} class="px-4 pb-4 animate-fade-in">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <%= for cr <- criteria_for(@tab) do %>
+              <% val = Map.get(scores_map, cr.id, 0) %>
+              <button
+                phx-click="cycle_score"
+                phx-value-asset-id={asset.id}
+                phx-value-criterion={cr.id}
+                class={"flex flex-col gap-0.5 px-3 py-2 rounded-lg text-xs transition-all border #{cond do
+                  val == 1 -> "bg-buy/15 border-buy/30 text-buy"
+                  val == -1 -> "bg-accent-rose/15 border-accent-rose/30 text-accent-rose"
+                  true -> "bg-surface-3 border-surface-4 text-text-muted"
+                end}"}
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono font-bold">{cond do val == 1 -> "+1"; val == -1 -> "-1"; true -> "0" end}</span>
+                  <span class="font-semibold">{cr.label}</span>
+                </div>
+                <span class="text-[10px] opacity-70">{cr.q}</span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,179 @@
+<div class="space-y-6 animate-fade-in">
+  <!-- Top bar -->
+  <div class="flex items-center justify-end">
+    <button phx-click="toggle_display" class="btn-ghost text-sm flex items-center gap-1.5 px-2.5 py-1.5">
+      <span class={"#{display_icon(@display_mode)} w-4 h-4"} />
+      <span class="text-xs font-mono">{display_label(@display_mode)}</span>
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <.link navigate={~p"/"} class="btn-ghost p-2 rounded-lg">
+      <span class="hero-arrow-left-solid w-4 h-4" />
+    </.link>
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight font-display">{@config.label}</h2>
+      <p class="text-text-muted text-sm">
+        {gettext("%{count} ativos", count: length(@assets))} · Total: {mask(@total_value, @fmt, 1.0, @display_mode)}
+      </p>
+    </div>
+  </div>
+
+  <!-- Assets Table -->
+  <div class="glass-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-surface-3">
+            <th class="text-left px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">
+              {if @class_key == "rendaFixa", do: gettext("Ativo"), else: gettext("Ticker")}
+            </th>
+            <th :if={@class_key not in ["rendaFixa", "crypto"]} class="text-left px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Setor")}</th>
+            <%= if @class_key == "rendaFixa" do %>
+              <th class="text-right px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Valor")}</th>
+              <th class="text-center px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Liquidez")}</th>
+            <% else %>
+              <th class="text-right px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Cotação")}</th>
+              <th class="text-right px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Qtd")}</th>
+              <th class="text-right px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Total")}</th>
+              <th class="text-center px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("% Obj")}</th>
+              <th class="text-center px-4 py-3 text-text-muted text-xs font-medium uppercase tracking-wider">{gettext("Nota")}</th>
+            <% end %>
+            <th class="px-4 py-3 w-20"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for asset <- @assets do %>
+            <% asset_total = if @class_key == "rendaFixa", do: asset.value || 0.0, else: (asset.qty || 0.0) * (asset.price || 0.0) %>
+            <% pct_actual = if @total_value > 0, do: asset_total / @total_value, else: 0.0 %>
+            <% score = Portfolio.compute_score(asset) %>
+
+            <tr
+              phx-click="toggle_edit"
+              phx-value-id={asset.id}
+              class="border-b border-surface-3/50 hover:bg-surface-2/50 transition-colors cursor-pointer"
+            >
+              <td class="px-4 py-3">
+                <span class="font-mono font-semibold text-text-primary">{asset.ticker || asset.name}</span>
+              </td>
+              <td :if={@class_key not in ["rendaFixa", "crypto"]} class="px-4 py-3 text-text-secondary text-xs">{asset.sector}</td>
+              <%= if @class_key == "rendaFixa" do %>
+                <td class="px-4 py-3 text-right font-mono">{mask(asset.value || 0.0, @fmt, pct_actual, @display_mode)}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class={"text-xs px-2 py-0.5 rounded-full #{cond do
+                    asset.liquidity == "Boa" -> "bg-buy/15 text-buy"
+                    asset.liquidity == "Regular" -> "bg-accent-amber/15 text-accent-amber"
+                    true -> "bg-accent-rose/15 text-accent-rose"
+                  end}"}>{asset.liquidity || "—"}</span>
+                </td>
+              <% else %>
+                <td class="px-4 py-3 text-right font-mono">{@fmt.(asset.price || 0.0)}</td>
+                <td class="px-4 py-3 text-right font-mono">{if @display_mode == :hidden, do: "•••••", else: asset.qty}</td>
+                <td class="px-4 py-3 text-right font-mono">{mask(asset_total, @fmt, pct_actual, @display_mode)}</td>
+                <td class="px-4 py-3 text-center text-xs">{Portfolio.format_pct(asset.target_pct || 0.0)}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class={"font-mono text-xs font-bold px-2 py-0.5 rounded #{cond do
+                    score == "SN" -> "text-text-muted"
+                    is_integer(score) and score >= 9 -> "text-buy"
+                    is_integer(score) and score >= 5 -> "text-accent-amber"
+                    true -> "text-accent-rose"
+                  end}"}>{score}</span>
+                </td>
+              <% end %>
+              <td class="px-4 py-3">
+                <button phx-click="delete_asset" phx-value-id={asset.id} class="text-text-muted hover:text-accent-rose transition-colors" data-confirm={gettext("Remover este ativo?")}>
+                  <span class="hero-trash-solid w-3.5 h-3.5" />
+                </button>
+              </td>
+            </tr>
+
+            <!-- Inline edit row -->
+            <tr :if={@edit_id == asset.id} class="bg-surface-2/80">
+              <td colspan="8" class="px-4 py-4">
+                <div class="space-y-3">
+                  <p class="text-xs text-text-muted uppercase tracking-wider font-semibold">
+                    {gettext("Editar")} {asset.ticker || asset.name}
+                  </p>
+                  <form phx-submit="save_asset" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <input type="hidden" name="id" value={asset.id} />
+                    <%= if @class_key == "rendaFixa" do %>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Nome")}</label>
+                        <input class="input-field w-full mt-1" name="name" value={asset.name || ""} />
+                      </div>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Valor (R$)")}</label>
+                        <input type="number" step="0.01" class="input-field w-full mt-1" name="value" value={asset.value || 0} />
+                      </div>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Liquidez")}</label>
+                        <select class="input-field w-full mt-1" name="liquidity">
+                          <option value="Boa" selected={asset.liquidity == "Boa"}>Boa</option>
+                          <option value="Regular" selected={asset.liquidity == "Regular"}>Regular</option>
+                          <option value="Ruim" selected={asset.liquidity == "Ruim"}>Ruim</option>
+                        </select>
+                      </div>
+                    <% else %>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Ticker")}</label>
+                        <input class="input-field w-full mt-1" name="ticker" value={asset.ticker || ""} />
+                      </div>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Cotação")}</label>
+                        <input type="number" step="0.01" class="input-field w-full mt-1" name="price" value={asset.price || 0} />
+                      </div>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("Quantidade")}</label>
+                        <input type="number" step="0.0001" class="input-field w-full mt-1" name="qty" value={asset.qty || 0} />
+                      </div>
+                      <div>
+                        <label class="text-[10px] text-text-muted uppercase">{gettext("% Objetivo")}</label>
+                        <input type="number" step="0.01" min="0" max="100" class="input-field w-full mt-1" name="target_pct" value={Float.round((asset.target_pct || 0.0) * 100, 1)} />
+                      </div>
+                    <% end %>
+                    <div class="flex items-end">
+                      <button type="submit" class="btn-primary text-xs flex items-center gap-1">
+                        <span class="hero-check-solid w-3 h-3" /> {gettext("Salvar")}
+                      </button>
+                    </div>
+                  </form>
+
+                  <!-- Criteria for acoes/fiis -->
+                  <div :if={@config.has_criteria}>
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-semibold mt-2 mb-2">
+                      {gettext("Diagrama do Cerrado — Nota:")} {Portfolio.compute_score(asset)}
+                    </p>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                      <%= for cr <- criteria_for(@class_key) do %>
+                        <% val = Map.get(Portfolio.get_scores_map(asset.id), cr.id, 0) %>
+                        <button
+                          phx-click="cycle_score"
+                          phx-value-asset-id={asset.id}
+                          phx-value-criterion={cr.id}
+                          class={"flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border #{cond do
+                            val == 1 -> "bg-buy/15 border-buy/30 text-buy"
+                            val == -1 -> "bg-accent-rose/15 border-accent-rose/30 text-accent-rose"
+                            true -> "bg-surface-3 border-surface-4 text-text-muted"
+                          end}"}
+                          title={cr.q}
+                        >
+                          <span class="font-mono">{cond do val == 1 -> "+1"; val == -1 -> "-1"; true -> "0" end}</span>
+                          {cr.label}
+                        </button>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <button phx-click="add_asset" class="btn-ghost text-sm flex items-center gap-2">
+    <span class="hero-plus-solid w-4 h-4" /> {gettext("Adicionar Ativo")}
+  </button>
+</div>

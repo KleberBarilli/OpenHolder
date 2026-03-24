@@ -1,0 +1,186 @@
+/* Tailwind v4 with custom dark theme for Holder Dashboard */
+
+@import "tailwindcss" source(none);
+@source "../css";
+@source "../js";
+@source "../../lib/holder_web";
+
+/* Heroicons plugin */
+@plugin "../vendor/heroicons";
+
+/* ── Custom Theme ──────────────────────────────────────── */
+@theme {
+  --color-surface-0: #0a0a0f;
+  --color-surface-1: #12121a;
+  --color-surface-2: #1a1a26;
+  --color-surface-3: #222233;
+  --color-surface-4: #2a2a3d;
+
+  --color-accent-emerald: #34d399;
+  --color-accent-cyan: #22d3ee;
+  --color-accent-amber: #fbbf24;
+  --color-accent-rose: #fb7185;
+  --color-accent-violet: #a78bfa;
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-buy: #34d399;
+  --color-hold: #64748b;
+
+  --font-display: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+  --animate-spin: spin 1s linear infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Add variants based on LiveView classes */
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session], [data-phx-teleported-src] { display: contents }
+
+/* ── Base Styles ──────────────────────────────────────── */
+body {
+  background-color: #0a0a0f;
+  color: #f1f5f9;
+  font-family: "DM Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #12121a; }
+::-webkit-scrollbar-thumb { background: #222233; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #34d399; }
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }
+
+/* ── Component Classes ──────────────────────────────── */
+
+.glass-card {
+  background-color: #12121a;
+  border: 1px solid #222233;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.glass-card-hover {
+  background-color: #12121a;
+  border: 1px solid #222233;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+.glass-card-hover:hover {
+  border-color: #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.08);
+}
+
+.badge-buy {
+  color: #34d399;
+  background-color: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-hold {
+  color: #64748b;
+  background-color: rgba(100, 116, 139, 0.15);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.input-field {
+  background-color: #1a1a26;
+  border: 1px solid #2a2a3d;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-field:focus {
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+}
+
+.btn-primary {
+  background-color: #34d399;
+  color: #0a0a0f;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background-color: #2cb583;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #94a3b8;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  background-color: #222233;
+  color: #f1f5f9;
+}
+
+.tab-active {
+  color: #34d399;
+  border-bottom: 2px solid #34d399;
+  padding-bottom: 0.5rem;
+  font-weight: 600;
+}
+.tab-inactive {
+  color: #64748b;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 0.5rem;
+  transition: color 0.15s;
+}
+.tab-inactive:hover {
+  color: #94a3b8;
+}
+
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #34d399, transparent);
+}
