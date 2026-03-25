@@ -241,16 +241,24 @@ defmodule Holder.Portfolio do
     |> Enum.into(%{}, fn s -> {s.criterion_id, s.value} end)
   end
 
-  def update_asset_score(asset_id, criterion_id, value) do
+  def get_scores_detailed(asset_id) do
+    Repo.all(from s in AssetScore, where: s.asset_id == ^asset_id)
+    |> Enum.into(%{}, fn s -> {s.criterion_id, %{value: s.value, source: s.source || "manual", ai_reason: s.ai_reason}} end)
+  end
+
+  def update_asset_score(asset_id, criterion_id, value, opts \\ []) do
+    source = Keyword.get(opts, :source, "manual")
+    ai_reason = Keyword.get(opts, :ai_reason)
+
     case Repo.one(from s in AssetScore, where: s.asset_id == ^asset_id and s.criterion_id == ^criterion_id) do
       nil ->
         %AssetScore{}
-        |> AssetScore.changeset(%{criterion_id: criterion_id, value: value})
+        |> AssetScore.changeset(%{criterion_id: criterion_id, value: value, source: source, ai_reason: ai_reason})
         |> Ecto.Changeset.put_change(:asset_id, asset_id)
         |> Repo.insert()
       score ->
         score
-        |> AssetScore.changeset(%{value: value})
+        |> AssetScore.changeset(%{value: value, source: source, ai_reason: ai_reason})
         |> Repo.update()
     end
   end

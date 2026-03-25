@@ -16,7 +16,7 @@ config :holder, Holder.Repo,
 config :holder, HolderWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}],
+  http: [ip: {0, 0, 0, 0}],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -52,15 +52,17 @@ config :holder, HolderWeb.Endpoint,
 # Reload browser tabs when matching files change.
 config :holder, HolderWeb.Endpoint,
   live_reload: [
+    backend: :fs_poll,
+    backend_opts: [interval: 500],
     web_console_logger: true,
     patterns: [
       # Static assets, except user uploads
-      ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$"E,
+      ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$",
       # Gettext translations
-      ~r"priv/gettext/.*\.po$"E,
+      ~r"priv/gettext/.*\.po$",
       # Router, Controllers, LiveViews and LiveComponents
-      ~r"lib/holder_web/router\.ex$"E,
-      ~r"lib/holder_web/(controllers|live|components)/.*\.(ex|heex)$"E
+      ~r"lib/holder_web/router\.ex$",
+      ~r"lib/holder_web/(controllers|live|components)/.*\.(ex|heex)$"
     ]
   ]
 

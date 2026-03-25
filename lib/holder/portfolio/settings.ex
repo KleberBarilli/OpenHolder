@@ -10,6 +10,10 @@ defmodule Holder.Portfolio.Settings do
     field :classes_to_buy, :integer, default: 0
     field :min_diff_ignore, :float
     field :brapi_token, :string
+    field :ai_provider, :string
+    field :openai_api_key_enc, :string
+    field :gemini_api_key_enc, :string
+    field :claude_api_key_enc, :string
 
     belongs_to :portfolio, Holder.Portfolio.PortfolioRecord
 
@@ -18,6 +22,7 @@ defmodule Holder.Portfolio.Settings do
 
   def changeset(settings, attrs) do
     settings
-    |> cast(attrs, [:dollar_rate, :iof, :spread, :aporte_value, :classes_to_buy, :min_diff_ignore, :brapi_token])
+    |> cast(attrs, [:dollar_rate, :iof, :spread, :aporte_value, :classes_to_buy, :min_diff_ignore, :brapi_token, :ai_provider, :openai_api_key_enc, :gemini_api_key_enc, :claude_api_key_enc])
+    |> validate_inclusion(:ai_provider, [nil, "gemini"])
   end
 end

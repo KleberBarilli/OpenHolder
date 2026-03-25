@@ -2,6 +2,7 @@ defmodule HolderWeb.SettingsLive do
   use HolderWeb, :live_view
 
   alias Holder.Portfolio
+  alias Holder.Vault
 
   @impl true
   def mount(_params, _session, socket) do
@@ -26,6 +27,8 @@ defmodule HolderWeb.SettingsLive do
      |> assign(:import_new_classes, [])
      |> assign(:import_csv_raw, nil)
      |> assign(:import_results, nil)
+     |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
+     |> assign(:ai_test_status, nil)
      |> allow_upload(:csv, accept: ~w(.csv), max_entries: 1, max_file_size: 1_000_000)}
   end
 
@@ -45,6 +48,37 @@ defmodule HolderWeb.SettingsLive do
     Portfolio.update_settings(socket.assigns.portfolio_id, %{brapi_token: String.trim(token)})
     settings = Portfolio.get_settings(socket.assigns.portfolio_id)
     {:noreply, assign(socket, :settings, settings)}
+  end
+
+  def handle_event("save_ai_key", %{"provider" => "gemini", "api_key" => key}, socket) do
+    key = String.trim(key)
+
+    if key == "" do
+      {:noreply, socket}
+    else
+      encrypted = Vault.encrypt(key)
+      Portfolio.update_settings(socket.assigns.portfolio_id, %{ai_provider: "gemini", gemini_api_key_enc: encrypted})
+      settings = Portfolio.get_settings(socket.assigns.portfolio_id)
+
+      {:noreply,
+       socket
+       |> assign(:settings, settings)
+       |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
+       |> assign(:ai_test_status, nil)
+       |> put_flash(:info, gettext("Chave salva com sucesso!"))}
+    end
+  end
+
+  def handle_event("test_ai_key", %{"provider" => "gemini"}, socket) do
+    enc_key = socket.assigns.settings.gemini_api_key_enc
+
+    status =
+      case Holder.AIScoring.test_connection("gemini", enc_key) do
+        :ok -> :ok
+        {:error, _} -> :error
+      end
+
+    {:noreply, assign(socket, :ai_test_status, status)}
   end
 
   def handle_event("update_target", %{"class" => class, "value" => value}, socket) do

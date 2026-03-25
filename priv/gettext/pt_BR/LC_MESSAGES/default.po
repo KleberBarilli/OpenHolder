@@ -1,565 +1,561 @@
-## English translations for Holder Dashboard
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
 msgid ""
 msgstr ""
-"Language: en\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 #: lib/holder_web/live/class_detail_live.html.heex:40
 #, elixir-autogen, elixir-format
 msgid "% Obj"
-msgstr "% Target"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:131
 #, elixir-autogen, elixir-format
 msgid "% Objetivo"
-msgstr "% Target"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "%{count} ativos"
-msgstr "%{count} assets"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:42
 #, elixir-autogen, elixir-format
 msgid "%{count} classes com posição"
-msgstr "%{count} classes with position"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:46
 #, elixir-autogen, elixir-format
 msgid "%{done}/%{total}"
-msgstr "%{done}/%{total}"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:139
 #, elixir-autogen, elixir-format
 msgid "%{ok}/%{total} ativos pontuados com IA"
-msgstr "%{ok}/%{total} assets scored with AI"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:50
 #, elixir-autogen, elixir-format
 msgid "%{ok}/%{total} concluídos"
-msgstr "%{ok}/%{total} completed"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:69
 #, elixir-autogen, elixir-format
 msgid "%{pct}% do aporte"
-msgstr "%{pct}% of contribution"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:9
 #, elixir-autogen, elixir-format
 msgid "API de Cotações (BrAPI)"
-msgstr "Quotes API (BrAPI)"
+msgstr ""
 
 #: lib/holder_web/components/core_components.ex:367
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr "Actions"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:168
 #, elixir-autogen, elixir-format
 msgid "Adicionar"
-msgstr "Add"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:222
 #, elixir-autogen, elixir-format
 msgid "Adicionar Ativo"
-msgstr "Add Asset"
+msgstr ""
 
-## Rate limit
 #: lib/holder_web/live/dashboard_live.ex:47
 #, elixir-autogen, elixir-format
 msgid "Aguarde %{min} min antes de atualizar novamente"
-msgstr "Wait %{min} min before refreshing again"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "Ajuste parâmetros gerais e metas de alocação"
-msgstr "Adjust general parameters and allocation targets"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:77
 #, elixir-autogen, elixir-format
 msgid "Alocação Atual"
-msgstr "Current Allocation"
+msgstr ""
 
-## Assisted CSV Import
 #: lib/holder_web/live/settings_live.html.heex:222
 #, elixir-autogen, elixir-format
 msgid "Analisar CSV"
-msgstr "Analyze CSV"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:202
 #, elixir-autogen, elixir-format
 msgid "As metas devem somar 100%%. Atualmente somam %{total}%%."
-msgstr "Targets must sum to 100%%. Currently %{total}%%."
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:107
 #, elixir-autogen, elixir-format
 msgid "Ativar"
-msgstr "Enable"
+msgstr ""
 
-## ClassDetail
 #: lib/holder_web/live/class_detail_live.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Ativo"
-msgstr "Asset"
+msgstr ""
 
-## Asset save
 #: lib/holder_web/live/class_detail_live.ex:79
 #, elixir-autogen, elixir-format
 msgid "Ativo salvo!"
-msgstr "Asset saved!"
+msgstr ""
 
-## Chart labels
 #: lib/holder_web/live/dashboard_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "Atual"
-msgstr "Current"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:98
 #, elixir-autogen, elixir-format
 msgid "Atual vs Objetivo"
-msgstr "Current vs Target"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Atual:"
-msgstr "Current:"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:7
 #, elixir-autogen, elixir-format
 msgid "Atualizando..."
-msgstr "Refreshing..."
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:7
 #, elixir-autogen, elixir-format
 msgid "Atualizar Cotações"
-msgstr "Refresh Quotes"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:90
 #, elixir-autogen, elixir-format
 msgid "Atualize as cotações dos ativos primeiro"
-msgstr "Refresh asset quotes first"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:93
 #, elixir-autogen, elixir-format
 msgid "Atualize as cotações para ver o gráfico"
-msgstr "Refresh quotes to see the chart"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:43
 #, elixir-autogen, elixir-format
 msgid "Atualize as cotações para ver o total"
-msgstr "Refresh quotes to see the total"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "Avalie seus ativos com critérios fundamentalistas"
-msgstr "Evaluate your assets with fundamentalist criteria"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:10
 #, elixir-autogen, elixir-format
 msgid "Ações / Stocks"
-msgstr "Stocks (BR)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:214
 #, elixir-autogen, elixir-format
 msgid "Baixe o template"
-msgstr "Download template"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:26
 #, elixir-autogen, elixir-format
 msgid "Bom (5-8)"
-msgstr "Good (5-8)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:244
 #, elixir-autogen, elixir-format
 msgid "Cancelar"
-msgstr "Cancel"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Carteira balanceada ou sem dados"
-msgstr "Balanced portfolio or no data"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:43
 #, elixir-autogen, elixir-format
 msgid "Chave API Gemini"
-msgstr "Gemini API Key"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.ex:68
 #, elixir-autogen, elixir-format
 msgid "Chave salva com sucesso!"
-msgstr "Key saved successfully!"
+msgstr ""
 
-## Asset class management
 #: lib/holder_web/live/settings_live.ex:201
 #, elixir-autogen, elixir-format
 msgid "Classe atualizada!"
-msgstr "Class updated!"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:256
 #, elixir-autogen, elixir-format
 msgid "Classe existente"
-msgstr "Existing class"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.ex:213
 #, elixir-autogen, elixir-format
 msgid "Classe removida"
-msgstr "Class removed"
+msgstr ""
 
-## Sidebar / Layout
 #: lib/holder_web/components/layouts/app.html.heex:50
 #, elixir-autogen, elixir-format
 msgid "Classes"
-msgstr "Classes"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:110
 #: lib/holder_web/live/settings_live.html.heex:97
 #, elixir-autogen, elixir-format
 msgid "Classes de Ativos"
-msgstr "Asset Classes"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:265
 #, elixir-autogen, elixir-format
 msgid "Classes novas detectadas — configure antes de importar:"
-msgstr "New classes detected — configure before importing:"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:48
 #, elixir-autogen, elixir-format
 msgid "Classes para Aportar"
-msgstr "Classes to Invest"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Classes para aportar"
-msgstr "Classes to invest"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Cole seu token aqui"
-msgstr "Paste your token here"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:233
 #, elixir-autogen, elixir-format
 msgid "Colunas: asset_class, ticker, name, sector, asset_type, qty, price, value, target_pct, score, liquidity"
-msgstr "Columns: asset_class, ticker, name, sector, asset_type, qty, price, value, target_pct, score, liquidity"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:58
 #, elixir-autogen, elixir-format
 msgid "Conectado!"
-msgstr "Connected!"
+msgstr ""
 
-## Settings
 #: lib/holder_web/components/layouts/app.html.heex:46
 #: lib/holder_web/live/scoring_live.html.heex:66
 #: lib/holder_web/live/settings_live.html.heex:3
 #, elixir-autogen, elixir-format
 msgid "Configurações"
-msgstr "Settings"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:65
 #, elixir-autogen, elixir-format
 msgid "Configure uma API Key (OpenAI ou Gemini) nas"
-msgstr "Set up an API Key (OpenAI or Gemini) in"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:303
 #, elixir-autogen, elixir-format
 msgid "Confirmar importação"
-msgstr "Confirm import"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:126
 #: lib/holder_web/live/settings_live.html.heex:155
 #: lib/holder_web/live/settings_live.html.heex:283
 #, elixir-autogen, elixir-format
 msgid "Cor"
-msgstr "Color"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:37
 #: lib/holder_web/live/class_detail_live.html.heex:123
 #, elixir-autogen, elixir-format
 msgid "Cotação"
-msgstr "Price"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:98
 #, elixir-autogen, elixir-format
 msgid "Crie e edite suas classes de ativos. Cada classe agrupa ativos do mesmo tipo."
-msgstr "Create and edit your asset classes. Each class groups assets of the same type."
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:74
 #, elixir-autogen, elixir-format
 msgid "Critérios"
-msgstr "Criteria"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:66
 #, elixir-autogen, elixir-format
 msgid "Câmbio"
-msgstr "Exchange Rate"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "Câmbio USD/BRL"
-msgstr "Exchange Rate USD/BRL"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:343
 #, elixir-autogen, elixir-format
 msgid "Dados"
-msgstr "Data"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "Dados resetados com sucesso"
-msgstr "Data reset successfully"
+msgstr ""
 
 #: lib/holder_web/components/layouts/app.html.heex:72
 #, elixir-autogen, elixir-format
 msgid "Dados salvos em SQLite"
-msgstr "Data stored in SQLite"
+msgstr ""
 
-## Dashboard
 #: lib/holder_web/components/layouts/app.html.heex:25
 #: lib/holder_web/live/dashboard_live.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
-msgstr "Dashboard"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:107
 #, elixir-autogen, elixir-format
 msgid "Desativar"
-msgstr "Disable"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:90
 #, elixir-autogen, elixir-format
 msgid "Digite um valor de aporte para ver a sugestão"
-msgstr "Enter a contribution amount to see the suggestion"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:96
 #, elixir-autogen, elixir-format
 msgid "Editar"
-msgstr "Edit"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Erro ao buscar cotações"
-msgstr "Error fetching quotes"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.ex:120
 #: lib/holder_web/live/settings_live.ex:169
 #, elixir-autogen, elixir-format
 msgid "Erro: %{reason}"
-msgstr "Error: %{reason}"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:22
 #, elixir-autogen, elixir-format
 msgid "Excelente (9-11)"
-msgstr "Excellent (9-11)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:346
 #, elixir-autogen, elixir-format
 msgid "Exportar JSON"
-msgstr "Export JSON"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:13
 #, elixir-autogen, elixir-format
 msgid "FIIs / REITs"
-msgstr "FIIs / REITs"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:61
 #, elixir-autogen, elixir-format
 msgid "Falha na conexão"
-msgstr "Connection failed"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Fraco (<5)"
-msgstr "Weak (<5)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:75
 #, elixir-autogen, elixir-format
 msgid "Geral"
-msgstr "General"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:273
 #, elixir-autogen, elixir-format
 msgid "Ignorada"
-msgstr "Skipped"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:208
 #, elixir-autogen, elixir-format
 msgid "Importar Carteira (CSV)"
-msgstr "Import Portfolio (CSV)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:311
 #, elixir-autogen, elixir-format
 msgid "Importação concluída!"
-msgstr "Import completed!"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:213
 #, elixir-autogen, elixir-format
 msgid "Importe seus ativos via arquivo CSV."
-msgstr "Import your assets via CSV file."
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:273
 #, elixir-autogen, elixir-format
 msgid "Incluída"
-msgstr "Included"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:35
 #: lib/holder_web/live/class_detail_live.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "Liquidez"
-msgstr "Liquidity"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:111
 #, elixir-autogen, elixir-format
 msgid "Manual"
-msgstr "Manual"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:97
 #, elixir-autogen, elixir-format
 msgid "Metas Macro"
-msgstr "Macro Targets"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:177
 #, elixir-autogen, elixir-format
 msgid "Metas Macro (%%)"
-msgstr "Macro Targets (%%)"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:130
 #: lib/holder_web/live/settings_live.html.heex:159
 #: lib/holder_web/live/settings_live.html.heex:288
 #, elixir-autogen, elixir-format
 msgid "Moeda"
-msgstr "Currency"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:102
 #, elixir-autogen, elixir-format
 msgid "Nome"
-msgstr "Name"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "Nota"
-msgstr "Score"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:255
 #, elixir-autogen, elixir-format
 msgid "Nova classe"
-msgstr "New class"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:336
 #, elixir-autogen, elixir-format
 msgid "Novo import"
-msgstr "New import"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:203
 #: lib/holder_web/live/scoring_live.html.heex:196
 #, elixir-autogen, elixir-format
 msgid "Não"
-msgstr "No"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.ex:133
 #, elixir-autogen, elixir-format
 msgid "Objetivo"
-msgstr "Target"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Objetivo:"
-msgstr "Target:"
+msgstr ""
 
-## Display toggle
 #: lib/holder_web/live/class_detail_live.ex:148
 #: lib/holder_web/live/dashboard_live.ex:89
 #: lib/holder_web/live/rebalance_live.ex:91
 #, elixir-autogen, elixir-format
 msgid "Oculto"
-msgstr "Hidden"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:353
 #, elixir-autogen, elixir-format
 msgid "Os dados ficam salvos no banco SQLite do servidor. Use Export para fazer backup."
-msgstr "Data is stored in the server's SQLite database. Use Export to back up."
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:36
 #, elixir-autogen, elixir-format
 msgid "Patrimônio Total"
-msgstr "Total Equity"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:80
 #, elixir-autogen, elixir-format
 msgid "Patrimônio após aporte"
-msgstr "Equity after contribution"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:42
 #, elixir-autogen, elixir-format
 msgid "Pontuando..."
-msgstr "Scoring..."
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:135
 #, elixir-autogen, elixir-format
 msgid "Pontuar com IA"
-msgstr "Score with AI"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:42
 #, elixir-autogen, elixir-format
 msgid "Pontuar todos com IA"
-msgstr "Score all with AI"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "Pontuação"
-msgstr "Score"
+msgstr ""
 
-## Asset Scoring
 #: lib/holder_web/components/layouts/app.html.heex:39
 #: lib/holder_web/live/scoring_live.html.heex:3
 #, elixir-autogen, elixir-format
 msgid "Pontuação de Ativos"
-msgstr "Asset Scoring"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:326
 #, elixir-autogen, elixir-format
 msgid "Por classe:"
-msgstr "By class:"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "Qtd"
-msgstr "Qty"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:127
 #, elixir-autogen, elixir-format
 msgid "Quantidade"
-msgstr "Quantity"
+msgstr ""
 
-## Rebalance
 #: lib/holder_web/components/layouts/app.html.heex:32
 #: lib/holder_web/live/rebalance_live.html.heex:10
 #, elixir-autogen, elixir-format
 msgid "Rebalanceamento"
-msgstr "Rebalancing"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:113
 #, elixir-autogen, elixir-format
 msgid "Remover esta classe e todos os seus ativos?"
-msgstr "Remove this class and all its assets?"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:85
 #, elixir-autogen, elixir-format
 msgid "Remover este ativo?"
-msgstr "Remove this asset?"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:349
 #, elixir-autogen, elixir-format
 msgid "Resetar Dados"
-msgstr "Reset Data"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:348
 #, elixir-autogen, elixir-format
 msgid "Resetar todos os dados?"
-msgstr "Reset all data?"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:242
 #, elixir-autogen, elixir-format
 msgid "Revisão"
-msgstr "Review"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:137
 #: lib/holder_web/live/settings_live.html.heex:23
@@ -567,192 +563,191 @@ msgstr "Review"
 #: lib/holder_web/live/settings_live.html.heex:138
 #, elixir-autogen, elixir-format
 msgid "Salvar"
-msgstr "Save"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "Scoring com IA"
-msgstr "AI Scoring"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "Selecione um arquivo CSV"
-msgstr "Select a CSV file"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:103
 #, elixir-autogen, elixir-format
 msgid "Sem dados para exibir"
-msgstr "No data to display"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "Setor"
-msgstr "Sector"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:187
 #: lib/holder_web/live/scoring_live.html.heex:180
 #, elixir-autogen, elixir-format
 msgid "Sim"
-msgstr "Yes"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Simule aportes e veja onde investir"
-msgstr "Simulate contributions and see where to invest"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:46
 #, elixir-autogen, elixir-format
 msgid "Sugestão de Aporte"
-msgstr "Contribution Suggestion"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:56
 #, elixir-autogen, elixir-format
 msgid "Testar conexão"
-msgstr "Test connection"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:30
 #: lib/holder_web/live/class_detail_live.html.heex:119
 #, elixir-autogen, elixir-format
 msgid "Ticker"
-msgstr "Ticker"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Token BrAPI"
-msgstr "BrAPI Token"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:26
 #, elixir-autogen, elixir-format
 msgid "Token salvo no servidor — nunca exposto no browser."
-msgstr "Token saved on server — never exposed in browser."
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Usamos a"
-msgstr "We use"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "Use IA para avaliar seus ativos automaticamente com a metodologia Diagrama do Cerrado. Sua chave é armazenada criptografada e usada apenas para consultas de scoring."
-msgstr "Use AI to automatically evaluate your assets with the Diagrama do Cerrado methodology. Your key is stored encrypted and used only for scoring queries."
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Valor"
-msgstr "Value"
+msgstr ""
 
 #: lib/holder_web/live/class_detail_live.html.heex:106
 #, elixir-autogen, elixir-format
 msgid "Valor (R$)"
-msgstr "Value (R$)"
+msgstr ""
 
 #: lib/holder_web/live/rebalance_live.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Valor do Aporte (R$)"
-msgstr "Contribution Amount (R$)"
+msgstr ""
 
 #: lib/holder_web/live/dashboard_live.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Visão geral da sua carteira"
-msgstr "Portfolio overview"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:330
 #, elixir-autogen, elixir-format
 msgid "ativos"
-msgstr "assets"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:242
 #, elixir-autogen, elixir-format
 msgid "ativos encontrados"
-msgstr "assets found"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:317
 #, elixir-autogen, elixir-format
 msgid "ativos importados"
-msgstr "assets imported"
+msgstr ""
 
-## Core components
 #: lib/holder_web/components/core_components.ex:73
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr "close"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:215
 #, elixir-autogen, elixir-format
 msgid "e preencha com seus dados."
-msgstr "and fill it with your data."
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:321
 #, elixir-autogen, elixir-format
 msgid "ignorados"
-msgstr "skipped"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "para buscar cotações de ações BR, FIIs, Stocks US, ETFs, REITs e crypto. O plano gratuito dá 15.000 requisições/mês — mais que suficiente para uso pessoal."
-msgstr "to fetch quotes for BR stocks, FIIs, US Stocks, ETFs, REITs and crypto. The free plan gives 15,000 requests/month — more than enough for personal use."
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "para usar scoring com IA."
-msgstr "to use AI scoring."
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:50
 #, elixir-autogen, elixir-format
 msgid "••••••• (salva)"
-msgstr "••••••• (saved)"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:144
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Chave API inválida"
-msgstr "Invalid API key"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:143
 #, elixir-autogen, elixir-format
 msgid "Chave API não encontrada"
-msgstr "API key not found"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:147
 #, elixir-autogen, elixir-format
 msgid "Formato de resposta inesperado"
-msgstr "Unexpected response format"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:142
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Provedor de IA não configurado"
-msgstr "AI provider not configured"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:145
 #, elixir-autogen, elixir-format
 msgid "Rate limit atingido, tente novamente"
-msgstr "Rate limit reached, try again later"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:146
 #, elixir-autogen, elixir-format
 msgid "Resposta inválida da IA"
-msgstr "Invalid AI response"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.ex:148
 #, elixir-autogen, elixir-format
 msgid "Timeout na chamada da IA"
-msgstr "AI call timed out"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:65
 #, elixir-autogen, elixir-format
 msgid "Crie sua chave grátis em"
-msgstr "Get your free key at"
+msgstr ""
 
 #: lib/holder_web/live/settings_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "Modelo:"
-msgstr "Model:"
+msgstr ""
 
 #: lib/holder_web/live/scoring_live.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Uma chamada por ativo. Chaves gratuitas têm limite baixo."
-msgstr "One API call per asset. Free keys have low rate limits."
+msgstr ""

@@ -98,16 +98,13 @@ defmodule HolderWeb.ClassDetailLive do
     reload(socket)
   end
 
-  def handle_event("cycle_score", %{"asset-id" => asset_id, "criterion" => criterion_id}, socket) do
+  def handle_event("set_score", %{"asset-id" => asset_id, "criterion" => criterion_id, "val" => val}, socket) do
     asset_id = String.to_integer(asset_id)
-    scores_map = Portfolio.get_scores_map(asset_id)
-    current = Map.get(scores_map, criterion_id, 0)
-    next = case current do
-      1 -> -1
-      -1 -> 0
-      _ -> 1
-    end
-    Portfolio.update_asset_score(asset_id, criterion_id, next)
+    new_val = String.to_integer(val)
+    current = Map.get(Portfolio.get_scores_map(asset_id), criterion_id, 0)
+    # Clicking the active value toggles it off (back to 0)
+    final = if current == new_val, do: 0, else: new_val
+    Portfolio.update_asset_score(asset_id, criterion_id, final)
     reload(socket)
   end
 

@@ -31,6 +31,43 @@
     </div>
   </div>
 
+  <!-- AI Batch button + progress -->
+  <div :if={@ai_available} class="flex items-center gap-3 flex-wrap">
+    <button
+      phx-click="ai_score_all"
+      disabled={@ai_batch_progress != nil and not @ai_batch_progress.done}
+      class="btn-primary text-sm flex items-center gap-2"
+    >
+      <span class="hero-sparkles-solid w-4 h-4" />
+      {if @ai_batch_progress && not @ai_batch_progress.done, do: gettext("Pontuando..."), else: gettext("Pontuar todos com IA")}
+    </button>
+    <span class="text-[10px] text-text-muted max-w-[200px] leading-tight">{gettext("Uma chamada por ativo. Chaves gratuitas têm limite baixo.")}</span>
+    <span :if={@ai_batch_progress && not @ai_batch_progress.done} class="text-xs text-text-muted font-mono">
+      {gettext("%{done}/%{total}", done: @ai_batch_progress.ok, total: @ai_batch_progress.total)}
+    </span>
+    <span :if={@ai_batch_progress && @ai_batch_progress.done} class="text-xs text-buy flex items-center gap-1">
+      <span class="hero-check-circle-solid w-3.5 h-3.5" />
+      {gettext("%{ok}/%{total} concluídos", ok: @ai_batch_progress.ok, total: @ai_batch_progress.total)}
+    </span>
+  </div>
+
+  <!-- Progress bar -->
+  <div :if={@ai_batch_progress && not @ai_batch_progress.done} class="h-1.5 bg-surface-3 rounded-full overflow-hidden">
+    <div
+      class="h-full bg-accent-violet rounded-full transition-all duration-500"
+      style={"width: #{if @ai_batch_progress.total > 0, do: Float.round(@ai_batch_progress.ok / @ai_batch_progress.total * 100, 0), else: 0}%"}
+    />
+  </div>
+
+  <div :if={not @ai_available} class="glass-card p-4 flex items-center gap-3">
+    <span class="hero-sparkles-solid w-5 h-5 text-text-muted" />
+    <p class="text-xs text-text-muted">
+      {gettext("Configure uma API Key (OpenAI ou Gemini) nas")}
+      <.link navigate={~p"/settings"} class="text-accent-emerald underline">{gettext("Configurações")}</.link>
+      {gettext("para usar scoring com IA.")}
+    </p>
+  </div>
+
   <!-- Criteria reference -->
   <details class="glass-card p-4">
     <summary class="text-xs text-text-muted cursor-pointer font-semibold uppercase tracking-wider">
@@ -49,54 +86,119 @@
   <div class="space-y-3">
     <%= for asset <- @assets do %>
       <% score = Portfolio.compute_score(asset) %>
-      <% scores_map = Portfolio.get_scores_map(asset.id) %>
+      <% scores_map = Portfolio.get_scores_detailed(asset.id) %>
+      <% is_loading = MapSet.member?(@ai_loading, asset.id) %>
       <div class="glass-card overflow-hidden">
         <button phx-click="toggle_expand" phx-value-id={asset.id} class="w-full p-4 flex items-center gap-4 hover:bg-surface-2/50 transition-colors">
-          <div class={"w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold font-mono #{cond do
-            score == "SN" -> "bg-surface-3 text-text-muted"
-            is_integer(score) and score >= 9 -> "bg-buy/15 text-buy"
-            is_integer(score) and score >= 5 -> "bg-accent-amber/15 text-accent-amber"
-            true -> "bg-accent-rose/15 text-accent-rose"
-          end}"}>
-            {score}
+          <div class={[
+            "w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold font-mono",
+            cond do
+              is_loading -> "bg-accent-violet/15 text-accent-violet animate-pulse"
+              score == "SN" -> "bg-surface-3 text-text-muted"
+              is_integer(score) and score >= 9 -> "bg-buy/15 text-buy"
+              is_integer(score) and score >= 5 -> "bg-accent-amber/15 text-accent-amber"
+              true -> "bg-accent-rose/15 text-accent-rose"
+            end
+          ]}>
+            {if is_loading, do: "...", else: score}
           </div>
           <div class="flex-1 text-left">
-            <p class="font-mono font-semibold">{asset.ticker}</p>
+            <div class="flex items-center gap-2">
+              <p class="font-mono font-semibold">{asset.ticker}</p>
+              <%!-- Source badge --%>
+              <% has_ai = Enum.any?(scores_map, fn {_, v} -> v.source == "ai" end) %>
+              <span :if={has_ai && score != "SN"} class="text-[9px] px-1.5 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-semibold uppercase">IA</span>
+              <span :if={!has_ai && score != "SN"} class="text-[9px] px-1.5 py-0.5 rounded bg-surface-3 text-text-muted font-semibold uppercase">{gettext("Manual")}</span>
+            </div>
             <p class="text-xs text-text-muted">{asset.sector}</p>
           </div>
+          <%!-- Criteria dots --%>
           <div class="hidden sm:flex gap-1">
             <%= for cr <- criteria_for(@tab) do %>
-              <% val = Map.get(scores_map, cr.id, 0) %>
-              <span class={"w-2 h-2 rounded-full #{cond do
-                val == 1 -> "bg-buy"
-                val == -1 -> "bg-accent-rose"
-                true -> "bg-surface-4"
-              end}"} title={cr.label} />
+              <% detail = Map.get(scores_map, cr.id, %{value: 0, source: "manual"}) %>
+              <span class={[
+                "w-2 h-2 rounded-full",
+                cond do
+                  detail.value == 1 -> "bg-buy"
+                  detail.value == -1 -> "bg-accent-rose"
+                  true -> "bg-surface-4"
+                end
+              ]} title={cr.label} />
             <% end %>
           </div>
+          <%!-- AI button (inline) --%>
+          <button
+            :if={@ai_available && !is_loading}
+            phx-click="ai_score_one"
+            phx-value-id={asset.id}
+            class="btn-ghost px-2 py-1.5 text-xs flex items-center gap-1 text-accent-violet hover:bg-accent-violet/10"
+            title={gettext("Pontuar com IA")}
+          >
+            <span class="hero-sparkles-solid w-3.5 h-3.5" />
+          </button>
+          <span :if={is_loading} class="text-accent-violet animate-spin">
+            <span class="hero-arrow-path-solid w-4 h-4" />
+          </span>
           <span class={"w-4 h-4 text-text-muted transition-transform #{if @expanded_id == asset.id, do: "rotate-180"} hero-chevron-down-solid"} />
         </button>
 
         <div :if={@expanded_id == asset.id} class="px-4 pb-4 animate-fade-in">
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div class="space-y-1.5">
             <%= for cr <- criteria_for(@tab) do %>
-              <% val = Map.get(scores_map, cr.id, 0) %>
-              <button
-                phx-click="cycle_score"
-                phx-value-asset-id={asset.id}
-                phx-value-criterion={cr.id}
-                class={"flex flex-col gap-0.5 px-3 py-2 rounded-lg text-xs transition-all border #{cond do
-                  val == 1 -> "bg-buy/15 border-buy/30 text-buy"
-                  val == -1 -> "bg-accent-rose/15 border-accent-rose/30 text-accent-rose"
-                  true -> "bg-surface-3 border-surface-4 text-text-muted"
-                end}"}
-              >
-                <div class="flex items-center gap-1.5">
-                  <span class="font-mono font-bold">{cond do val == 1 -> "+1"; val == -1 -> "-1"; true -> "0" end}</span>
-                  <span class="font-semibold">{cr.label}</span>
+              <% detail = Map.get(scores_map, cr.id, %{value: 0, source: "manual", ai_reason: nil}) %>
+              <div class={[
+                "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                cond do
+                  detail.value == 1 -> "bg-buy/5"
+                  detail.value == -1 -> "bg-accent-rose/5"
+                  true -> "bg-surface-2/50"
+                end
+              ]}>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-text-secondary">{cr.label}</span>
+                    <span :if={detail.source == "ai"} class="text-[8px] px-1 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-bold uppercase">IA</span>
+                  </div>
+                  <span class="text-[11px] text-text-muted">{cr.q}</span>
+                  <p :if={detail.ai_reason} class="text-[10px] text-text-muted/70 mt-0.5 italic leading-tight">
+                    {detail.ai_reason}
+                  </p>
                 </div>
-                <span class="text-[10px] opacity-70">{cr.q}</span>
-              </button>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button
+                    phx-click="set_score"
+                    phx-value-asset-id={asset.id}
+                    phx-value-criterion={cr.id}
+                    phx-value-val="1"
+                    class={[
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                      if(detail.value == 1,
+                        do: "bg-buy/20 text-buy ring-1 ring-buy/40",
+                        else: "text-text-muted hover:bg-buy/10 hover:text-buy"
+                      )
+                    ]}
+                    title={gettext("Sim")}
+                  >
+                    <span class="hero-check-solid w-4 h-4" />
+                  </button>
+                  <button
+                    phx-click="set_score"
+                    phx-value-asset-id={asset.id}
+                    phx-value-criterion={cr.id}
+                    phx-value-val="-1"
+                    class={[
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                      if(detail.value == -1,
+                        do: "bg-accent-rose/20 text-accent-rose ring-1 ring-accent-rose/40",
+                        else: "text-text-muted hover:bg-accent-rose/10 hover:text-accent-rose"
+                      )
+                    ]}
+                    title={gettext("Não")}
+                  >
+                    <span class="hero-x-mark-solid w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             <% end %>
           </div>
         </div>

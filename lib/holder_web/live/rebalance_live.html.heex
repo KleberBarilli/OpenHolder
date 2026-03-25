@@ -19,7 +19,7 @@
         <input
           type="number" step="100"
           class="input-field w-full mt-2 text-lg font-mono"
-          value={@aporte_value}
+          value={:erlang.float_to_binary(@aporte_value / 1, decimals: 2)}
           phx-blur="update_aporte"
           phx-keyup="update_aporte"
           phx-key="Enter"
