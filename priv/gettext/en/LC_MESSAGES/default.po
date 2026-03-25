@@ -117,8 +117,8 @@ msgstr "Remove this asset?"
 msgid "%{count} ativos"
 msgstr "%{count} assets"
 
-msgid "Diagrama do Cerrado — Nota:"
-msgstr "Cerrado Diagram — Score:"
+msgid "Pontuação:"
+msgstr "Score:"
 
 ## Rebalance
 msgid "Rebalanceamento"
@@ -157,9 +157,9 @@ msgstr "Enter a contribution amount to see the suggestion"
 msgid "Metas Macro"
 msgstr "Macro Targets"
 
-## Diagrama
-msgid "Diagrama do Cerrado"
-msgstr "Cerrado Diagram"
+## Asset Scoring
+msgid "Pontuação de Ativos"
+msgstr "Asset Scoring"
 
 msgid "Avalie seus ativos com critérios fundamentalistas"
 msgstr "Evaluate your assets with fundamentalist criteria"

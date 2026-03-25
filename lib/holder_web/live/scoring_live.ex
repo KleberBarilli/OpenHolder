@@ -1,4 +1,4 @@
-defmodule HolderWeb.DiagramaLive do
+defmodule HolderWeb.ScoringLive do
   use HolderWeb, :live_view
 
   alias Holder.Portfolio
@@ -15,7 +15,7 @@ defmodule HolderWeb.DiagramaLive do
      |> assign(:tab, tab)
      |> assign(:assets, assets)
      |> assign(:expanded_id, nil)
-     |> assign(:current_path, "/diagrama")}
+     |> assign(:current_path, "/scoring")}
   end
 
   @impl true

@@ -142,7 +142,7 @@
                   <!-- Criteria for acoes/fiis -->
                   <div :if={@config.has_criteria}>
                     <p class="text-[10px] text-text-muted uppercase tracking-wider font-semibold mt-2 mb-2">
-                      {gettext("Diagrama do Cerrado — Nota:")} {Portfolio.compute_score(asset)}
+                      {gettext("Pontuação:")} {Portfolio.compute_score(asset)}
                     </p>
                     <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                       <%= for cr <- criteria_for(@class_key) do %>

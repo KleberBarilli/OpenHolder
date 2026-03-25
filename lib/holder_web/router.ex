@@ -20,7 +20,7 @@ defmodule HolderWeb.Router do
       live "/", DashboardLive
       live "/detail/:class", ClassDetailLive
       live "/rebalance", RebalanceLive
-      live "/diagrama", DiagramaLive
+      live "/scoring", ScoringLive
       live "/settings", SettingsLive
     end
   end
