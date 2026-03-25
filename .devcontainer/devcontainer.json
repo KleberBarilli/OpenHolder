@@ -1,7 +1,10 @@
 {
-  "name": "Ralph Loop Environment",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "name": "OpenHolder Dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers/features/git:1": {}
   },
