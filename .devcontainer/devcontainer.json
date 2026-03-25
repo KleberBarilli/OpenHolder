@@ -1,0 +1,12 @@
+{
+  "name": "Ralph Loop Environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "curl -fsSL https://claude.ai/install.sh | bash && npm install -g jq",
+  "remoteUser": "vscode",
+  "mounts": [],
+  "runArgs": ["--network=host"]
+}
