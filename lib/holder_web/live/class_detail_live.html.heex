@@ -139,22 +139,87 @@
           <tr class="border-b border-surface-3">
             <%= if @class_key == "rendaFixa" do %>
               <th class="text-left px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Nome")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="ticker"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors"
+                >
+                  {gettext("Nome")}
+                  <%= if @sort_by == :ticker do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="hidden md:table-cell text-left px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
                 {gettext("Setor")}
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Valor")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="valor"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("Valor")}
+                  <%= if @sort_by == :valor do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("% Atual")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="pct_atual"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("% Atual")}
+                  <%= if @sort_by == :pct_atual do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("% Obj")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="target_pct"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("% Obj")}
+                  <%= if @sort_by == :target_pct do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="hidden md:table-cell text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Diff")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="diff"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("Diff")}
+                  <%= if @sort_by == :diff do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-center px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
                 {gettext("Sinal")}
@@ -164,7 +229,20 @@
               </th>
             <% else %>
               <th class="text-left px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Ticker")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="ticker"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors"
+                >
+                  {gettext("Ticker")}
+                  <%= if @sort_by == :ticker do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="hidden md:table-cell text-left px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
                 {gettext("Nome")}
@@ -179,28 +257,93 @@
                 {gettext("Qtd")}
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Valor")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="valor"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("Valor")}
+                  <%= if @sort_by == :valor do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("% Atual")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="pct_atual"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("% Atual")}
+                  <%= if @sort_by == :pct_atual do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("% Obj")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="target_pct"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("% Obj")}
+                  <%= if @sort_by == :target_pct do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="hidden md:table-cell text-right px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Diff")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="diff"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors ml-auto"
+                >
+                  {gettext("Diff")}
+                  <%= if @sort_by == :diff do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
               <th class="text-center px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
                 {gettext("Sinal")}
               </th>
               <th class="text-center px-3 py-2.5 text-text-muted text-[10px] font-medium uppercase tracking-wider">
-                {gettext("Nota")}
+                <button
+                  phx-click="sort"
+                  phx-value-col="nota"
+                  class="inline-flex items-center gap-0.5 hover:text-text-primary transition-colors"
+                >
+                  {gettext("Nota")}
+                  <%= if @sort_by == :nota do %>
+                    <span class={
+                      if @sort_dir == :asc,
+                        do: "hero-chevron-up-solid w-3 h-3",
+                        else: "hero-chevron-down-solid w-3 h-3"
+                    } />
+                  <% end %>
+                </button>
               </th>
             <% end %>
           </tr>
         </thead>
         <tbody>
-          <%= for asset <- @assets do %>
+          <%= for asset <- sorted_assets(assigns) do %>
             <% asset_total =
               if @class_key == "rendaFixa",
                 do: asset.value || 0.0,

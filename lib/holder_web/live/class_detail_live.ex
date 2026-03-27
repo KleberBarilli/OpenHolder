@@ -14,6 +14,8 @@ defmodule HolderWeb.ClassDetailLive do
      |> assign(:all_classes, all_classes)
      |> assign(:edit_id, nil)
      |> assign(:display_mode, :values)
+     |> assign(:sort_by, :sort_order)
+     |> assign(:sort_dir, :asc)
      |> assign(:show_new_class_form, false)
      |> assign(:new_class_errors, %{})
      |> assign_tab_indicators(portfolio.id, all_classes)
@@ -53,6 +55,8 @@ defmodule HolderWeb.ClassDetailLive do
       |> assign(:assets, assets)
       |> assign(:fmt, fmt)
       |> assign(:total_value, total_value)
+      |> assign(:sort_by, :sort_order)
+      |> assign(:sort_dir, :asc)
       |> assign(:current_path, "/detail/#{class_key}")
     end
   end
@@ -67,6 +71,19 @@ defmodule HolderWeb.ClassDetailLive do
       end
 
     {:noreply, assign(socket, :display_mode, next)}
+  end
+
+  def handle_event("sort", %{"col" => col}, socket) do
+    col_atom = String.to_existing_atom(col)
+
+    {new_by, new_dir} =
+      if socket.assigns.sort_by == col_atom do
+        {col_atom, if(socket.assigns.sort_dir == :asc, do: :desc, else: :asc)}
+      else
+        {col_atom, :asc}
+      end
+
+    {:noreply, assign(socket, sort_by: new_by, sort_dir: new_dir)}
   end
 
   def handle_event("toggle_edit", %{"id" => id}, socket) do
@@ -367,6 +384,76 @@ defmodule HolderWeb.ClassDetailLive do
       acc + (asset.target_pct || 0.0) * 100
     end)
   end
+
+  defp sorted_assets(assigns) do
+    assets = assigns.assets
+    sort_by = assigns.sort_by
+    sort_dir = assigns.sort_dir
+    class_key = assigns.class_key
+    total_value = assigns.total_value
+
+    sort_assets(assets, sort_by, sort_dir, class_key, total_value)
+  end
+
+  defp sort_assets(assets, :sort_order, :asc, _class_key, _total_value), do: assets
+
+  defp sort_assets(assets, :sort_order, :desc, _class_key, _total_value),
+    do: Enum.reverse(assets)
+
+  defp sort_assets(assets, :ticker, dir, _class_key, _total_value) do
+    Enum.sort_by(assets, &String.downcase(&1.ticker || &1.name || ""), sort_comparator(dir))
+  end
+
+  defp sort_assets(assets, :valor, dir, class_key, _total_value) do
+    Enum.sort_by(assets, &asset_value(&1, class_key), sort_comparator(dir))
+  end
+
+  defp sort_assets(assets, :pct_atual, dir, class_key, total_value) do
+    Enum.sort_by(
+      assets,
+      fn a ->
+        v = asset_value(a, class_key)
+        if total_value > 0, do: v / total_value, else: 0.0
+      end,
+      sort_comparator(dir)
+    )
+  end
+
+  defp sort_assets(assets, :target_pct, dir, _class_key, _total_value) do
+    Enum.sort_by(assets, &(&1.target_pct || 0.0), sort_comparator(dir))
+  end
+
+  defp sort_assets(assets, :diff, dir, class_key, total_value) do
+    Enum.sort_by(
+      assets,
+      fn a ->
+        v = asset_value(a, class_key)
+        pct_actual = if total_value > 0, do: v / total_value * 100, else: 0.0
+        target_display = (a.target_pct || 0.0) * 100
+        target_display - pct_actual
+      end,
+      sort_comparator(dir)
+    )
+  end
+
+  defp sort_assets(assets, :nota, dir, _class_key, _total_value) do
+    Enum.sort_by(
+      assets,
+      fn a ->
+        score = Portfolio.compute_score(a)
+        if is_integer(score), do: score, else: -999
+      end,
+      sort_comparator(dir)
+    )
+  end
+
+  defp sort_assets(assets, _unknown, _dir, _class_key, _total_value), do: assets
+
+  defp asset_value(asset, "rendaFixa"), do: asset.value || 0.0
+  defp asset_value(asset, _class_key), do: (asset.qty || 0.0) * (asset.price || 0.0)
+
+  defp sort_comparator(:asc), do: :asc
+  defp sort_comparator(:desc), do: :desc
 
   defp display_label(:values), do: "R$"
   defp display_label(:percent), do: "%"
