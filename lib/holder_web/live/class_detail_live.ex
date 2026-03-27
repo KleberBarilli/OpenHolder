@@ -158,6 +158,63 @@ defmodule HolderWeb.ClassDetailLive do
     reload(socket)
   end
 
+  def handle_event("inline_save", params, socket) do
+    asset_id = String.to_integer(params["id"])
+    field = params["field"]
+    raw_value = params["value"] || ""
+
+    case validate_inline(field, raw_value) do
+      {:ok, value} ->
+        value = if field == "target_pct", do: value / 100, else: value
+        Portfolio.update_asset(asset_id, %{String.to_existing_atom(field) => value})
+        {_, socket} = reload(socket)
+        {:noreply, push_event(socket, "inline-ok", %{id: "inline-#{asset_id}-#{field}"})}
+
+      {:error, msg} ->
+        {:noreply,
+         push_event(socket, "inline-err", %{id: "inline-#{asset_id}-#{field}", msg: msg})}
+    end
+  end
+
+  defp validate_inline("price", raw) do
+    case Float.parse(raw) do
+      {v, _} when v >= 0 -> {:ok, v}
+      {_, _} -> {:error, gettext("Cotação não pode ser negativa")}
+      :error -> {:error, gettext("Valor inválido")}
+    end
+  end
+
+  defp validate_inline("qty", raw) do
+    case Float.parse(raw) do
+      {v, _} when v >= 0 -> {:ok, v}
+      {_, _} -> {:error, gettext("Quantidade não pode ser negativa")}
+      :error -> {:error, gettext("Valor inválido")}
+    end
+  end
+
+  defp validate_inline("target_pct", raw) do
+    case Float.parse(raw) do
+      {v, _} when v >= 0 and v <= 100 -> {:ok, v}
+      {_, _} -> {:error, gettext("% Objetivo deve ser entre 0 e 100")}
+      :error -> {:error, gettext("Valor inválido")}
+    end
+  end
+
+  defp validate_inline("value", raw) do
+    case Float.parse(raw) do
+      {v, _} when v >= 0 -> {:ok, v}
+      {_, _} -> {:error, gettext("Valor não pode ser negativo")}
+      :error -> {:error, gettext("Valor inválido")}
+    end
+  end
+
+  defp validate_inline(_field, raw) do
+    case Float.parse(raw) do
+      {v, _} -> {:ok, v}
+      :error -> {:error, gettext("Valor inválido")}
+    end
+  end
+
   def handle_event("toggle_new_class_form", _params, socket) do
     {:noreply,
      socket

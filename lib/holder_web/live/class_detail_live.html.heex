@@ -227,14 +227,41 @@
                 <td class="hidden md:table-cell px-3 py-2 text-text-secondary text-xs truncate max-w-[120px]">
                   {asset.sector || "—"}
                 </td>
-                <td class="px-3 py-2 text-right font-mono text-xs">
-                  {mask(asset.value || 0.0, @fmt, pct_actual, @display_mode)}
+                <td class="px-3 py-2 text-right">
+                  <%= if @display_mode == :hidden do %>
+                    <span class="font-mono text-xs">&bull;&bull;&bull;&bull;&bull;</span>
+                  <% else %>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id={"inline-#{asset.id}-value"}
+                      class="inline-edit"
+                      value={:erlang.float_to_binary((asset.value || 0) / 1, decimals: 2)}
+                      phx-blur="inline_save"
+                      phx-value-id={asset.id}
+                      phx-value-field="value"
+                      phx-hook=".InlineEdit"
+                    />
+                  <% end %>
                 </td>
                 <td class="px-3 py-2 text-right font-mono text-xs text-text-secondary">
                   {format_pct_display(pct_actual_display)}
                 </td>
-                <td class="px-3 py-2 text-right font-mono text-xs">
-                  {format_pct_display(target_pct_display)}
+                <td class="px-3 py-2 text-right">
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    id={"inline-#{asset.id}-target_pct"}
+                    class="inline-edit"
+                    value={Float.round((asset.target_pct || 0.0) * 100, 1)}
+                    phx-blur="inline_save"
+                    phx-value-id={asset.id}
+                    phx-value-field="target_pct"
+                    phx-hook=".InlineEdit"
+                  />
                 </td>
                 <td class={[
                   "hidden md:table-cell px-3 py-2 text-right font-mono text-xs",
@@ -273,13 +300,37 @@
                 <td class="hidden md:table-cell px-3 py-2 text-text-secondary text-xs truncate max-w-[100px]">
                   {asset.sector || "—"}
                 </td>
-                <td class="px-3 py-2 text-right font-mono text-xs">
-                  {@fmt.(asset.price || 0.0)}
+                <td class="px-3 py-2 text-right">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id={"inline-#{asset.id}-price"}
+                    class="inline-edit"
+                    value={:erlang.float_to_binary((asset.price || 0) / 1, decimals: 2)}
+                    phx-blur="inline_save"
+                    phx-value-id={asset.id}
+                    phx-value-field="price"
+                    phx-hook=".InlineEdit"
+                  />
                 </td>
-                <td class="px-3 py-2 text-right font-mono text-xs">
-                  {if @display_mode == :hidden,
-                    do: "•••",
-                    else: :erlang.float_to_binary((asset.qty || 0) / 1, decimals: 2)}
+                <td class="px-3 py-2 text-right">
+                  <%= if @display_mode == :hidden do %>
+                    <span class="font-mono text-xs">&bull;&bull;&bull;</span>
+                  <% else %>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0"
+                      id={"inline-#{asset.id}-qty"}
+                      class="inline-edit"
+                      value={:erlang.float_to_binary((asset.qty || 0) / 1, decimals: 2)}
+                      phx-blur="inline_save"
+                      phx-value-id={asset.id}
+                      phx-value-field="qty"
+                      phx-hook=".InlineEdit"
+                    />
+                  <% end %>
                 </td>
                 <td class="px-3 py-2 text-right font-mono text-xs">
                   {mask(asset_total, @fmt, pct_actual, @display_mode)}
@@ -287,8 +338,20 @@
                 <td class="px-3 py-2 text-right font-mono text-xs text-text-secondary">
                   {format_pct_display(pct_actual_display)}
                 </td>
-                <td class="px-3 py-2 text-right font-mono text-xs">
-                  {format_pct_display(target_pct_display)}
+                <td class="px-3 py-2 text-right">
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    id={"inline-#{asset.id}-target_pct"}
+                    class="inline-edit"
+                    value={Float.round((asset.target_pct || 0.0) * 100, 1)}
+                    phx-blur="inline_save"
+                    phx-value-id={asset.id}
+                    phx-value-field="target_pct"
+                    phx-hook=".InlineEdit"
+                  />
                 </td>
                 <td class={[
                   "hidden md:table-cell px-3 py-2 text-right font-mono text-xs",
@@ -576,3 +639,23 @@
     <span class="hero-plus-solid w-4 h-4" /> {gettext("Adicionar Ativo")}
   </button>
 </div>
+
+<script :type={Phoenix.LiveView.ColocatedHook} name=".InlineEdit">
+  export default {
+    mounted() {
+      this.handleEvent("inline-ok", ({id}) => {
+        if (id !== this.el.id) return
+        this.el.classList.add("save-ok")
+        this.el.title = ""
+        setTimeout(() => this.el.classList.remove("save-ok"), 800)
+      })
+      this.handleEvent("inline-err", ({id, msg}) => {
+        if (id !== this.el.id) return
+        this.el.classList.add("save-err")
+        this.el.title = msg || "Error"
+        setTimeout(() => this.el.classList.remove("save-err"), 2000)
+      })
+      this.el.addEventListener("click", (e) => e.stopPropagation())
+    }
+  }
+</script>
