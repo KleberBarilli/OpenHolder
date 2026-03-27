@@ -101,23 +101,6 @@ defmodule HolderWeb.ClassDetailLive do
     {:noreply, assign(socket, :edit_id, new_id)}
   end
 
-  def handle_event("update_asset", %{"id" => id} = params, socket) do
-    id = String.to_integer(id)
-    attrs = %{}
-
-    attrs =
-      if params["field"] && params["value"] do
-        field = String.to_existing_atom(params["field"])
-        value = parse_value(params["field"], params["value"])
-        Map.put(attrs, field, value)
-      else
-        attrs
-      end
-
-    Portfolio.update_asset(id, attrs)
-    reload(socket)
-  end
-
   @asset_fields ~w(ticker name sector asset_type qty price value target_pct score liquidity)
   def handle_event("save_asset", %{"id" => id} = params, socket) do
     id = String.to_integer(id)
@@ -184,20 +167,6 @@ defmodule HolderWeb.ClassDetailLive do
 
   def handle_event("delete_asset", %{"id" => id}, socket) do
     Portfolio.delete_asset(String.to_integer(id))
-    reload(socket)
-  end
-
-  def handle_event(
-        "set_score",
-        %{"asset-id" => asset_id, "criterion" => criterion_id, "val" => val},
-        socket
-      ) do
-    asset_id = String.to_integer(asset_id)
-    new_val = String.to_integer(val)
-    current = Map.get(Portfolio.get_scores_map(asset_id), criterion_id, 0)
-    # Clicking the active value toggles it off (back to 0)
-    final = if current == new_val, do: 0, else: new_val
-    Portfolio.update_asset_score(asset_id, criterion_id, final)
     reload(socket)
   end
 
@@ -388,11 +357,7 @@ defmodule HolderWeb.ClassDetailLive do
 
   defp assign_tab_indicators(socket, portfolio_id, all_classes) do
     targets_map = Portfolio.get_macro_targets_map(portfolio_id)
-
-    asset_counts =
-      Enum.into(all_classes, %{}, fn ac ->
-        {ac.key, length(Portfolio.list_assets(portfolio_id, ac.key))}
-      end)
+    asset_counts = Portfolio.count_assets_by_class(portfolio_id, all_classes)
 
     socket
     |> assign(:asset_counts, asset_counts)
@@ -434,7 +399,7 @@ defmodule HolderWeb.ClassDetailLive do
 
   defp compute_signal(target_pct, pct_actual_display, target_pct_display) do
     cond do
-      target_pct == 0.0 -> nil
+      is_nil(target_pct) or abs(target_pct) < 0.0001 -> nil
       pct_actual_display < target_pct_display -> :buy
       true -> :hold
     end

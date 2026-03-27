@@ -152,8 +152,18 @@ defmodule Holder.AIScoring do
     end
   end
 
-  defp api_key_field("gemini", settings), do: settings.gemini_api_key_enc
-  defp api_key_field(_, _), do: nil
+  @api_key_fields %{
+    "gemini" => :gemini_api_key_enc,
+    "openai" => :openai_api_key_enc,
+    "claude" => :claude_api_key_enc
+  }
+
+  defp api_key_field(provider_key, settings) do
+    case Map.get(@api_key_fields, provider_key) do
+      nil -> nil
+      field -> Map.get(settings, field)
+    end
+  end
 
   defp validate_response(%{"scores" => scores_map}, criteria) when is_map(scores_map) do
     valid_ids = MapSet.new(Enum.map(criteria, & &1.id))

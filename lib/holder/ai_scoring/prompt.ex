@@ -111,7 +111,8 @@ defmodule Holder.AIScoring.Prompt do
       criteria
       |> Enum.with_index(1)
       |> Enum.map(fn {cr, i} ->
-        # Use detailed question from hardcoded map if available, otherwise use the criterion's own question/label
+        # For known default criteria, use detailed hardcoded question (better AI quality).
+        # For custom criteria (not in the map), use the criterion's own label.
         q = Map.get(questions, cr.id, cr[:q] || cr[:label] || cr.id)
         ~s(#{i}. [criterion_id: "#{cr.id}"] #{q})
       end)

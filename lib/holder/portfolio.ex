@@ -113,16 +113,16 @@ defmodule Holder.Portfolio do
   end
 
   def reorder_criterion(id, direction, portfolio_id) do
-    criterion = get_criterion!(id)
-    criteria = list_all_criteria(portfolio_id, criterion.criteria_type)
+    Repo.transaction(fn ->
+      criterion = get_criterion!(id)
+      criteria = list_all_criteria(portfolio_id, criterion.criteria_type)
 
-    idx = Enum.find_index(criteria, &(&1.id == criterion.id))
-    swap_idx = if direction == :up, do: idx - 1, else: idx + 1
+      idx = Enum.find_index(criteria, &(&1.id == criterion.id))
+      swap_idx = if direction == :up, do: idx - 1, else: idx + 1
 
-    if swap_idx >= 0 and swap_idx < length(criteria) do
-      other = Enum.at(criteria, swap_idx)
+      if swap_idx >= 0 and swap_idx < length(criteria) do
+        other = Enum.at(criteria, swap_idx)
 
-      Repo.transaction(fn ->
         criterion
         |> ScoringCriterion.changeset(%{sort_order: other.sort_order})
         |> Repo.update!()
@@ -130,8 +130,8 @@ defmodule Holder.Portfolio do
         other
         |> ScoringCriterion.changeset(%{sort_order: criterion.sort_order})
         |> Repo.update!()
-      end)
-    end
+      end
+    end)
   end
 
   # ── Asset Classes (from database) ─────────────────────────
@@ -422,6 +422,21 @@ defmodule Holder.Portfolio do
   end
 
   # ── Assets ────────────────────────────────────────────────
+
+  def count_assets_by_class(portfolio_id, all_classes) do
+    counts =
+      Repo.all(
+        from a in Asset,
+          where: a.portfolio_id == ^portfolio_id,
+          group_by: a.asset_class,
+          select: {a.asset_class, count(a.id)}
+      )
+      |> Enum.into(%{})
+
+    Enum.into(all_classes, %{}, fn ac ->
+      {ac.key, Map.get(counts, ac.key, 0)}
+    end)
+  end
 
   def list_all_tickers(portfolio_id) do
     Repo.all(
