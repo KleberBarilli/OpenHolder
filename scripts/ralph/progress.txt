@@ -19,6 +19,8 @@ Started: Fri Mar 27 14:14:43 UTC 2026
 - Dense table: non-RF has 11 columns, RF has 8 — update colspan on inline edit rows when adding/removing columns
 - Use `hidden md:table-cell` for responsive table column visibility (Tailwind v4)
 - ClassDetailLive uses `handle_params/3` + `load_class/2` for tab switching — `@all_classes` is loaded once in mount
+- Inline edit inputs use `.inline-edit` CSS class (transparent bg, shows border on hover/focus) + `.InlineEdit` colocated JS hook for save-ok/save-err feedback
+- `phx-blur` on `<input>` sends `%{"value" => el.value}` along with `phx-value-*` attributes — no extra JS needed for value extraction
 ---
 
 ## 2026-03-27 - T01
@@ -157,4 +159,19 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - Diff column shows +/- prefix for positive/negative values — useful visual cue for rebalancing
   - Signal logic: Buy when target_pct > 0 AND % Atual < % Obj; Hold when target_pct > 0 AND % Atual >= % Obj; empty when target_pct == 0
   - `hidden md:table-cell` is the Tailwind v4 pattern for responsive table column visibility
+---
+
+## 2026-03-27 - F2-02
+- Made Cotação, Qtd, % Obj columns (and Valor for RF) editable inline with blur-to-save
+- Added `.inline-edit` CSS class: transparent bg, hover border, emerald focus ring, save-ok green flash, save-err red border
+- Added `.InlineEdit` colocated JS hook for visual feedback on push_event("inline-ok"/"inline-err")
+- Added `handle_event("inline_save", ...)` with per-field validation (no negative qty/price, target_pct 0-100)
+- Converts target_pct /100 before save; recalculates all derived columns via reload/1
+- Click on inline inputs stops propagation to prevent toggle_edit row expansion
+- Files changed: assets/css/app.css, lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - `phx-blur` on inputs sends `%{"value" => input_value}` along with `phx-value-*` attrs automatically
+  - Colocated hooks (`.InlineEdit`) need `e.stopPropagation()` on click to prevent parent row click handlers
+  - `push_event` returns socket — must rebind or chain with pipe; used in both ok/err paths
+  - Hidden mode needs special handling for inline inputs — show dots placeholder instead of input when `@display_mode == :hidden`
 ---

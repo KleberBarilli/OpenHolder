@@ -84,7 +84,7 @@
       "id": "F2-02",
       "title": "Tabela densa - edicao inline por blur",
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "requirements": "Make Cotacao, Qtd, % Obj columns (and Valor for RF) editable inline. Fields render as plain text until focused, then become number inputs. Save on blur via phx-blur event handler (handle_event 'inline_save'). Visual feedback: emerald ring on focus (ring-accent-emerald), brief green flash on success, red border + tooltip on validation error. Validate: no negative qty/price, target_pct 0-100. Convert target_pct /100 before save. Recalculate all derived columns after save. Run mix precommit."
     },
     {
