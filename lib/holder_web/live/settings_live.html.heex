@@ -39,9 +39,23 @@
     </p>
 
     <div class="max-w-md space-y-4">
+      <%!-- Provider selector --%>
       <div>
+        <label class="text-xs text-text-muted uppercase tracking-wider">{gettext("Provedor de IA")}</label>
+        <form phx-change="change_provider" id="ai-provider-form">
+          <select class="input-field w-full mt-1" name="ai_provider" id="ai-provider-select">
+            <option value="" selected={@selected_provider == ""}>{gettext("Selecione um provedor")}</option>
+            <%= for {key, module} <- @providers do %>
+              <option value={key} selected={@selected_provider == key}>{module.name()}</option>
+            <% end %>
+          </select>
+        </form>
+      </div>
+
+      <%!-- Gemini API key field --%>
+      <div :if={@selected_provider == "gemini"} class="animate-fade-in">
         <label class="text-xs text-text-muted uppercase tracking-wider">{gettext("Chave API Gemini")}</label>
-        <form phx-submit="save_ai_key" class="flex gap-2 mt-1">
+        <form phx-submit="save_ai_key" id="ai-key-form" class="flex gap-2 mt-1">
           <input type="hidden" name="provider" value="gemini" />
           <input
             type="password"

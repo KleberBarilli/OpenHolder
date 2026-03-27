@@ -12,6 +12,8 @@ defmodule HolderWeb.SettingsLive do
     total_target = targets |> Map.values() |> Enum.sum()
 
     asset_classes = Portfolio.list_all_asset_classes(portfolio.id)
+    providers = Holder.AIScoring.providers()
+    selected_provider = settings.ai_provider || ""
 
     {:ok,
      socket
@@ -27,6 +29,8 @@ defmodule HolderWeb.SettingsLive do
      |> assign(:import_new_classes, [])
      |> assign(:import_csv_raw, nil)
      |> assign(:import_results, nil)
+     |> assign(:providers, providers)
+     |> assign(:selected_provider, selected_provider)
      |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
      |> assign(:ai_test_status, nil)
      |> allow_upload(:csv, accept: ~w(.csv), max_entries: 1, max_file_size: 1_000_000)}
@@ -50,30 +54,44 @@ defmodule HolderWeb.SettingsLive do
     {:noreply, assign(socket, :settings, settings)}
   end
 
-  def handle_event("save_ai_key", %{"provider" => "gemini", "api_key" => key}, socket) do
+  def handle_event("change_provider", %{"ai_provider" => provider_key}, socket) do
+    Portfolio.update_settings(socket.assigns.portfolio_id, %{ai_provider: provider_key})
+    settings = Portfolio.get_settings(socket.assigns.portfolio_id)
+
+    {:noreply,
+     socket
+     |> assign(:settings, settings)
+     |> assign(:selected_provider, provider_key)
+     |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
+     |> assign(:ai_test_status, nil)}
+  end
+
+  def handle_event("save_ai_key", %{"provider" => provider, "api_key" => key}, socket) do
     key = String.trim(key)
 
     if key == "" do
       {:noreply, socket}
     else
       encrypted = Vault.encrypt(key)
-      Portfolio.update_settings(socket.assigns.portfolio_id, %{ai_provider: "gemini", gemini_api_key_enc: encrypted})
+      key_field = provider_key_field(provider)
+      Portfolio.update_settings(socket.assigns.portfolio_id, Map.put(%{ai_provider: provider}, key_field, encrypted))
       settings = Portfolio.get_settings(socket.assigns.portfolio_id)
 
       {:noreply,
        socket
        |> assign(:settings, settings)
+       |> assign(:selected_provider, provider)
        |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
        |> assign(:ai_test_status, nil)
        |> put_flash(:info, gettext("Chave salva com sucesso!"))}
     end
   end
 
-  def handle_event("test_ai_key", %{"provider" => "gemini"}, socket) do
-    enc_key = socket.assigns.settings.gemini_api_key_enc
+  def handle_event("test_ai_key", %{"provider" => provider}, socket) do
+    enc_key = provider_enc_key(provider, socket.assigns.settings)
 
     status =
-      case Holder.AIScoring.test_connection("gemini", enc_key) do
+      case Holder.AIScoring.test_connection(provider, enc_key) do
         :ok -> :ok
         {:error, _} -> :error
       end
@@ -271,4 +289,11 @@ defmodule HolderWeb.SettingsLive do
     |> Enum.filter(& &1.enabled)
     |> Enum.map(fn ac -> %{key: ac.key, label: ac.label, color: ac.color} end)
   end
+
+  defp provider_key_field("gemini"), do: :gemini_api_key_enc
+  defp provider_key_field(_), do: :gemini_api_key_enc
+
+  defp provider_enc_key("gemini", settings), do: settings.gemini_api_key_enc
+  defp provider_enc_key(_, _), do: nil
+
 end
