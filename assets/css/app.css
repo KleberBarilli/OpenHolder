@@ -133,6 +133,36 @@ input[type=number] { -moz-appearance: textfield; }
   box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
 }
 
+.inline-edit {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  outline: none;
+  text-align: right;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+}
+.inline-edit:hover {
+  border-color: #2a2a3d;
+}
+.inline-edit:focus {
+  background-color: #1a1a26;
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+}
+.inline-edit.save-ok {
+  background-color: rgba(52, 211, 153, 0.1);
+  border-color: #34d399;
+}
+.inline-edit.save-err {
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2);
+}
+
 .btn-primary {
   background-color: #34d399;
   color: #0a0a0f;

@@ -1,21 +1,35 @@
 <div class="space-y-6 animate-fade-in">
   <div>
-    <h2 class="text-2xl font-bold tracking-tight font-display">{gettext("Pontuação de Ativos")}</h2>
-    <p class="text-text-muted text-sm mt-1">{gettext("Avalie seus ativos com critérios fundamentalistas")}</p>
+    <h2 class="text-2xl font-bold tracking-tight font-display">
+      {gettext("Pontuação de Ativos")}
+    </h2>
+    <p class="text-text-muted text-sm mt-1">
+      {gettext("Avalie seus ativos com critérios fundamentalistas")}
+    </p>
   </div>
-
-  <!-- Tabs -->
+  
+<!-- Tabs -->
   <div class="flex gap-4 border-b border-surface-3">
-    <button phx-click="switch_tab" phx-value-tab="acoes" class={if @tab == "acoes", do: "tab-active", else: "tab-inactive"}>
+    <button
+      phx-click="switch_tab"
+      phx-value-tab="acoes"
+      class={if @tab == "acoes", do: "tab-active", else: "tab-inactive"}
+    >
       {gettext("Ações / Stocks")}
     </button>
-    <button phx-click="switch_tab" phx-value-tab="fiis" class={if @tab == "fiis", do: "tab-active", else: "tab-inactive"}>
+    <button
+      phx-click="switch_tab"
+      phx-value-tab="fiis"
+      class={if @tab == "fiis", do: "tab-active", else: "tab-inactive"}
+    >
       {gettext("FIIs / REITs")}
     </button>
   </div>
-
-  <!-- Score distribution -->
-  <% dist = score_distribution(@assets) %>
+  
+<!-- Score distribution -->
+  <% active_criteria = criteria_for(@tab, @portfolio_id) %>
+  <% active_ids = Enum.map(active_criteria, & &1.id) %>
+  <% dist = score_distribution(@assets, active_ids) %>
   <div class="grid grid-cols-3 gap-4">
     <div class="glass-card p-4 text-center">
       <p class="text-3xl font-bold font-mono text-buy">{dist.excellent}</p>
@@ -30,8 +44,8 @@
       <p class="text-xs text-text-muted mt-1">{gettext("Fraco (<5)")}</p>
     </div>
   </div>
-
-  <!-- AI Batch button + progress -->
+  
+<!-- AI Batch button + progress -->
   <div :if={@ai_available} class="flex items-center gap-3 flex-wrap">
     <button
       phx-click="ai_score_all"
@@ -39,20 +53,36 @@
       class="btn-primary text-sm flex items-center gap-2"
     >
       <span class="hero-sparkles-solid w-4 h-4" />
-      {if @ai_batch_progress && not @ai_batch_progress.done, do: gettext("Pontuando..."), else: gettext("Pontuar todos com IA")}
+      {if @ai_batch_progress && not @ai_batch_progress.done,
+        do: gettext("Pontuando..."),
+        else: gettext("Pontuar todos com IA")}
     </button>
-    <span class="text-[10px] text-text-muted max-w-[200px] leading-tight">{gettext("Uma chamada por ativo. Chaves gratuitas têm limite baixo.")}</span>
-    <span :if={@ai_batch_progress && not @ai_batch_progress.done} class="text-xs text-text-muted font-mono">
+    <span class="text-[10px] text-text-muted max-w-[200px] leading-tight">
+      {gettext("Uma chamada por ativo. Chaves gratuitas têm limite baixo.")}
+    </span>
+    <span
+      :if={@ai_batch_progress && not @ai_batch_progress.done}
+      class="text-xs text-text-muted font-mono"
+    >
       {gettext("%{done}/%{total}", done: @ai_batch_progress.ok, total: @ai_batch_progress.total)}
     </span>
-    <span :if={@ai_batch_progress && @ai_batch_progress.done} class="text-xs text-buy flex items-center gap-1">
+    <span
+      :if={@ai_batch_progress && @ai_batch_progress.done}
+      class="text-xs text-buy flex items-center gap-1"
+    >
       <span class="hero-check-circle-solid w-3.5 h-3.5" />
-      {gettext("%{ok}/%{total} concluídos", ok: @ai_batch_progress.ok, total: @ai_batch_progress.total)}
+      {gettext("%{ok}/%{total} concluídos",
+        ok: @ai_batch_progress.ok,
+        total: @ai_batch_progress.total
+      )}
     </span>
   </div>
-
-  <!-- Progress bar -->
-  <div :if={@ai_batch_progress && not @ai_batch_progress.done} class="h-1.5 bg-surface-3 rounded-full overflow-hidden">
+  
+<!-- Progress bar -->
+  <div
+    :if={@ai_batch_progress && not @ai_batch_progress.done}
+    class="h-1.5 bg-surface-3 rounded-full overflow-hidden"
+  >
     <div
       class="h-full bg-accent-violet rounded-full transition-all duration-500"
       style={"width: #{if @ai_batch_progress.total > 0, do: Float.round(@ai_batch_progress.ok / @ai_batch_progress.total * 100, 0), else: 0}%"}
@@ -63,33 +93,39 @@
     <span class="hero-sparkles-solid w-5 h-5 text-text-muted" />
     <p class="text-xs text-text-muted">
       {gettext("Configure uma API Key (OpenAI ou Gemini) nas")}
-      <.link navigate={~p"/settings"} class="text-accent-emerald underline">{gettext("Configurações")}</.link>
+      <.link navigate={~p"/settings"} class="text-accent-emerald underline">
+        {gettext("Configurações")}
+      </.link>
       {gettext("para usar scoring com IA.")}
     </p>
   </div>
-
-  <!-- Criteria reference -->
+  
+<!-- Criteria reference -->
   <details class="glass-card p-4">
     <summary class="text-xs text-text-muted cursor-pointer font-semibold uppercase tracking-wider">
-      {gettext("Critérios")} ({length(criteria_for(@tab))})
+      {gettext("Critérios")} ({length(criteria_for(@tab, @portfolio_id))})
     </summary>
     <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-      <%= for cr <- criteria_for(@tab) do %>
+      <%= for cr <- criteria_for(@tab, @portfolio_id) do %>
         <div class="text-xs text-text-secondary">
           <span class="font-semibold">{cr.label}</span> — {cr.q}
         </div>
       <% end %>
     </div>
   </details>
-
-  <!-- Asset cards -->
+  
+<!-- Asset cards -->
   <div class="space-y-3">
     <%= for asset <- @assets do %>
-      <% score = Portfolio.compute_score(asset) %>
+      <% score = Portfolio.compute_score(asset, active_ids) %>
       <% scores_map = Portfolio.get_scores_detailed(asset.id) %>
       <% is_loading = MapSet.member?(@ai_loading, asset.id) %>
       <div class="glass-card overflow-hidden">
-        <button phx-click="toggle_expand" phx-value-id={asset.id} class="w-full p-4 flex items-center gap-4 hover:bg-surface-2/50 transition-colors">
+        <button
+          phx-click="toggle_expand"
+          phx-value-id={asset.id}
+          class="w-full p-4 flex items-center gap-4 hover:bg-surface-2/50 transition-colors"
+        >
           <div class={[
             "w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold font-mono",
             cond do
@@ -107,23 +143,36 @@
               <p class="font-mono font-semibold">{asset.ticker}</p>
               <%!-- Source badge --%>
               <% has_ai = Enum.any?(scores_map, fn {_, v} -> v.source == "ai" end) %>
-              <span :if={has_ai && score != "SN"} class="text-[9px] px-1.5 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-semibold uppercase">IA</span>
-              <span :if={!has_ai && score != "SN"} class="text-[9px] px-1.5 py-0.5 rounded bg-surface-3 text-text-muted font-semibold uppercase">{gettext("Manual")}</span>
+              <span
+                :if={has_ai && score != "SN"}
+                class="text-[9px] px-1.5 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-semibold uppercase"
+              >
+                IA
+              </span>
+              <span
+                :if={!has_ai && score != "SN"}
+                class="text-[9px] px-1.5 py-0.5 rounded bg-surface-3 text-text-muted font-semibold uppercase"
+              >
+                {gettext("Manual")}
+              </span>
             </div>
             <p class="text-xs text-text-muted">{asset.sector}</p>
           </div>
           <%!-- Criteria dots --%>
           <div class="hidden sm:flex gap-1">
-            <%= for cr <- criteria_for(@tab) do %>
+            <%= for cr <- criteria_for(@tab, @portfolio_id) do %>
               <% detail = Map.get(scores_map, cr.id, %{value: 0, source: "manual"}) %>
-              <span class={[
-                "w-2 h-2 rounded-full",
-                cond do
-                  detail.value == 1 -> "bg-buy"
-                  detail.value == -1 -> "bg-accent-rose"
-                  true -> "bg-surface-4"
-                end
-              ]} title={cr.label} />
+              <span
+                class={[
+                  "w-2 h-2 rounded-full",
+                  cond do
+                    detail.value == 1 -> "bg-buy"
+                    detail.value == -1 -> "bg-accent-rose"
+                    true -> "bg-surface-4"
+                  end
+                ]}
+                title={cr.label}
+              />
             <% end %>
           </div>
           <%!-- AI button (inline) --%>
@@ -144,8 +193,9 @@
 
         <div :if={@expanded_id == asset.id} class="px-4 pb-4 animate-fade-in">
           <div class="space-y-1.5">
-            <%= for cr <- criteria_for(@tab) do %>
-              <% detail = Map.get(scores_map, cr.id, %{value: 0, source: "manual", ai_reason: nil}) %>
+            <%= for cr <- criteria_for(@tab, @portfolio_id) do %>
+              <% detail =
+                Map.get(scores_map, cr.id, %{value: 0, source: "manual", ai_reason: nil}) %>
               <div class={[
                 "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
                 cond do
@@ -157,10 +207,18 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-1.5">
                     <span class="text-xs font-semibold text-text-secondary">{cr.label}</span>
-                    <span :if={detail.source == "ai"} class="text-[8px] px-1 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-bold uppercase">IA</span>
+                    <span
+                      :if={detail.source == "ai"}
+                      class="text-[8px] px-1 py-0.5 rounded bg-accent-violet/15 text-accent-violet font-bold uppercase"
+                    >
+                      IA
+                    </span>
                   </div>
                   <span class="text-[11px] text-text-muted">{cr.q}</span>
-                  <p :if={detail.ai_reason} class="text-[10px] text-text-muted/70 mt-0.5 italic leading-tight">
+                  <p
+                    :if={detail.ai_reason}
+                    class="text-[10px] text-text-muted/70 mt-0.5 italic leading-tight"
+                  >
                     {detail.ai_reason}
                   </p>
                 </div>

@@ -1,16 +1,22 @@
 defmodule Holder.AIScoring.Gemini do
   @moduledoc "Google Gemini provider for AI scoring."
 
+  @behaviour Holder.AIScoring.Provider
+
   require Logger
 
   @model "gemini-2.5-flash"
 
   def model, do: @model
 
+  @impl true
+  def name, do: "Google Gemini"
+
   defp url(api_key) do
     "https://generativelanguage.googleapis.com/v1beta/models/#{@model}:generateContent?key=#{api_key}"
   end
 
+  @impl true
   def score(ticker, criteria_type, criteria, api_key) do
     alias Holder.AIScoring.Prompt
 
@@ -60,6 +66,7 @@ defmodule Holder.AIScoring.Gemini do
     end
   end
 
+  @impl true
   def test_connection(api_key) do
     body = %{
       contents: [%{role: "user", parts: [%{text: "Reply with exactly: ok"}]}],

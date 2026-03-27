@@ -56,29 +56,38 @@ defmodule Holder.AIScoring.Prompt do
 
   @stock_questions %{
     "roe" => "Has the company historically maintained a ROE above 15%? (Consider prior years)",
-    "cagr" => "Has the company achieved revenue (or profit) growth above 5% over the last 5 years?",
-    "dy" => "Does the company have a track record of paying dividends or conducting share buybacks?",
-    "tech" => "Does the company invest significantly in R&D and innovation? Rule: Obsolete sector or pure Commodity = ALWAYS NO",
+    "cagr" =>
+      "Has the company achieved revenue (or profit) growth above 5% over the last 5 years?",
+    "dy" =>
+      "Does the company have a track record of paying dividends or conducting share buybacks?",
+    "tech" =>
+      "Does the company invest significantly in R&D and innovation? Rule: Obsolete sector or pure Commodity = ALWAYS NO",
     "market" => "Has the company been in the market for 30+ years or is it a Blue Chip?",
     "perene" => "Has the sector the company operates in existed for 100+ years?",
     "gov" => "Does the company have good governance? Rule: History of corruption = ALWAYS NO",
     "indep" => "Is the company free from government control or single-customer concentration?",
-    "divida" => "Is Net Debt/EBITDA below 2 (utilities ≤ 3) over the last 5 years? Rule: For banks, Basel Index > 11",
+    "divida" =>
+      "Is Net Debt/EBITDA below 2 (utilities ≤ 3) over the last 5 years? Rule: For banks, Basel Index > 11",
     "ncicl" => "Is the company NOT in a cyclical sector? OR Is it a perennial company?",
     "lucro" => "Has the company NOT posted a loss in the last 5 years?"
   }
 
   @fii_questions %{
-    "regiao" => "Are the fund's properties located in prime regions (T1 or urban core), above 30%? For paper/mortgage funds = YES",
-    "pvp" => "Is the fund trading below P/BV 1.0 or P/FFO 15? (Above 1.2 or P/FFO 18+ = disqualified in any case)",
-    "dep" => "Is the fund NOT dependent on a single tenant or property? OR Does the fund have less than 10% exposure to a single issuer?",
+    "regiao" =>
+      "Are the fund's properties located in prime regions (T1 or urban core), above 30%? For paper/mortgage funds = YES",
+    "pvp" =>
+      "Is the fund trading below P/BV 1.0 or P/FFO 15? (Above 1.2 or P/FFO 18+ = disqualified in any case)",
+    "dep" =>
+      "Is the fund NOT dependent on a single tenant or property? OR Does the fund have less than 10% exposure to a single issuer?",
     "dy" => "Is the dividend yield at or above the average for funds of the same type?",
     "risco" => "Is the fund rated High Grade BBB+ or above?",
-    "local" => "Is the fund present in more than 3 states? For paper funds = YES, US REITs = 5+ states",
+    "local" =>
+      "Is the fund present in more than 3 states? For paper funds = YES, US REITs = 5+ states",
     "gov" => "Does the fund have an excellent management company with a good track record?",
     "taxa" => "Is the management fee equal to or below 1% per year? REITs < 1.5%",
     "vacancia" => "Is the fund a brick-and-mortar type with vacancy below 10%?",
-    "divida" => "Does the fund have healthy leverage? (FII: sector average; paper: below 10 in high Selic | REIT: Net Debt/EBITDA acceptable for its type)",
+    "divida" =>
+      "Does the fund have healthy leverage? (FII: sector average; paper: below 10 in high Selic | REIT: Net Debt/EBITDA acceptable for its type)",
     "cagr" => "Is FFO growth (CAGR) above 3%?"
   }
 
@@ -102,7 +111,9 @@ defmodule Holder.AIScoring.Prompt do
       criteria
       |> Enum.with_index(1)
       |> Enum.map(fn {cr, i} ->
-        q = Map.get(questions, cr.id, cr.q)
+        # For known default criteria, use detailed hardcoded question (better AI quality).
+        # For custom criteria (not in the map), use the criterion's own label.
+        q = Map.get(questions, cr.id, cr[:q] || cr[:label] || cr.id)
         ~s(#{i}. [criterion_id: "#{cr.id}"] #{q})
       end)
       |> Enum.join("\n")

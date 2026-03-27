@@ -1,0 +1,140 @@
+{
+  "project": "OpenHolder",
+  "branchName": "ralph/prd-melhorias",
+  "description": "Portfolio dashboard improvements: tests, AI architecture, navigation, dense table, registration UX, dynamic criteria. Full PRD at docs/PRD.md",
+  "stories": [
+    {
+      "id": "T01",
+      "title": "Portfolio context tests - CRUD de asset classes e assets",
+      "priority": 1,
+      "passes": true,
+      "requirements": "Create test file test/holder/portfolio_test.exs covering CRUD for asset_classes (list_asset_classes, list_all_asset_classes, create_asset_class, update_asset_class, delete_asset_class, get_asset_class_by_key) and assets (list_assets, create_asset, update_asset, delete_asset, get_asset!). Use Ecto sandbox. Each test sets up its own portfolio via get_or_create_default_portfolio/0 and uses ensure_default_classes/1 for classes. Follow the test guidelines in CLAUDE.md."
+    },
+    {
+      "id": "T02",
+      "title": "Portfolio context tests - calculos e formatadores",
+      "priority": 2,
+      "passes": true,
+      "requirements": "Add tests to test/holder/portfolio_test.exs (or a new file test/holder/portfolio_calculations_test.exs) covering: compute_macro_summary/1 (BRL classes, USD classes with dollar rate, Renda Fixa with manual value, sinais Buy/Hold), compute_score/1, get_macro_targets_map/1, update_macro_target/3, format_brl/1, format_usd/1, format_pct/1, safe_color/1. Test edge cases: empty portfolio, zero values, mixed currencies."
+    },
+    {
+      "id": "T03",
+      "title": "Portfolio context tests - import/export JSON e CSV",
+      "priority": 3,
+      "passes": true,
+      "requirements": "Create test file test/holder/portfolio_import_export_test.exs covering: export_json/1 (verify structure, verify API keys excluded), import_json/2 (roundtrip: export then import should restore data), parse_csv/2 (valid CSV, invalid CSV, new classes detection), import_csv_confirmed/3. Set up portfolio with assets and scores before export."
+    },
+    {
+      "id": "T04",
+      "title": "AI Scoring and Vault unit tests",
+      "priority": 4,
+      "passes": true,
+      "requirements": "Create test files: test/holder/vault_test.exs (encrypt/decrypt roundtrip, decrypt nil returns nil), test/holder/ai_scoring/prompt_test.exs (system_prompt returns non-empty string, user_prompt includes ticker and criteria, generates correct format for stock and fii types). Do NOT call real Gemini API. Test Holder.AIScoring.validate_response/2 if accessible."
+    },
+    {
+      "id": "T05",
+      "title": "LiveView smoke tests - todas as paginas renderizam",
+      "priority": 5,
+      "passes": true,
+      "requirements": "Create LiveView test files: test/holder_web/live/dashboard_live_test.exs, test/holder_web/live/class_detail_live_test.exs (test with /detail/acoes), test/holder_web/live/scoring_live_test.exs, test/holder_web/live/rebalance_live_test.exs, test/holder_web/live/settings_live_test.exs. Each test mounts the LiveView and asserts 200 status and key elements present (use has_element?). Set up portfolio, default classes, and settings in setup blocks. Follow Phoenix LiveView test guidelines from CLAUDE.md."
+    },
+    {
+      "id": "F4-01",
+      "title": "Criar behaviour Holder.AIScoring.Provider",
+      "priority": 6,
+      "passes": true,
+      "requirements": "Create module lib/holder/ai_scoring/provider.ex with @callback score(ticker :: String.t(), criteria_type :: String.t(), criteria :: list(), api_key :: String.t()) :: {:ok, map()} | {:error, term()}, @callback test_connection(api_key :: String.t()) :: :ok | {:error, term()}, @callback name() :: String.t(). Make Holder.AIScoring.Gemini add @behaviour Holder.AIScoring.Provider and adapt function signatures. Keep all existing logic intact. Run mix precommit."
+    },
+    {
+      "id": "F4-02",
+      "title": "Refatorar orquestrador AIScoring para usar behaviour",
+      "priority": 7,
+      "passes": true,
+      "requirements": "In Holder.AIScoring, add @providers map (%{\"gemini\" => Holder.AIScoring.Gemini}). Refactor resolve_provider/1 to return {module, api_key} by looking up ai_provider in the registry. score_asset/2 and test_connection/2 delegate to the resolved module. Remove manual case dispatch. All existing functionality must keep working. Run mix precommit."
+    },
+    {
+      "id": "F4-03",
+      "title": "UI de selecao de provedor de IA nas Settings",
+      "priority": 8,
+      "passes": true,
+      "requirements": "In SettingsLive, add a select dropdown to choose the active AI provider. Options come from the @providers registry (Holder.AIScoring.providers/0 function). On provider change, show the corresponding API key field. Save selection to settings.ai_provider. Keep existing Gemini key field working. Use .input-field CSS class. Run mix precommit."
+    },
+    {
+      "id": "F3-01",
+      "title": "Tabs horizontais na pagina ClassDetailLive",
+      "priority": 9,
+      "passes": true,
+      "requirements": "Add a horizontal tab bar at the top of ClassDetailLive. Show all enabled asset classes as tabs, ordered by sort_order. Each tab shows: colored dot + class label. Active tab uses .tab-active CSS class, others use .tab-inactive. Clicking a tab does push_patch to /detail/{class_key} (no full page reload). Load class list in mount. Run mix precommit."
+    },
+    {
+      "id": "F3-02",
+      "title": "Indicadores nas tabs e botao + para criar classe",
+      "priority": 10,
+      "passes": true,
+      "requirements": "Enhance tabs from F3-01: add asset count badge (small number) on each tab. Add Buy/Hold dot indicator if macro target > 0 for the class. Add a '+' button at the end of the tab bar that opens a compact inline form to create a new class (fields: key, label, color, currency). On create, new tab appears immediately. Use glass-card style for the form. Run mix precommit."
+    },
+    {
+      "id": "F2-01",
+      "title": "Tabela densa - estrutura basica com todas as colunas",
+      "priority": 11,
+      "passes": true,
+      "requirements": "Replace the card-based asset listing in ClassDetailLive with a dense table. For non-RF classes columns: Ticker, Nome, Setor, Cotacao, Qtd, Valor (qty*price), % Atual (asset value / class total), % Obj (target_pct * 100), Diff (% Obj - % Atual), Sinal (Buy if target>0 and atual<obj, Hold if target>0 and atual>=obj, empty if target==0), Nota (score badge). For Renda Fixa: Nome, Setor, Valor, % Atual, % Obj, Diff, Sinal, Liquidez. Totals row at bottom with: total value, sum of % Atual, sum of % Obj, asset count. Hide Nome, Setor, Diff on screens < 768px. Use glass-card container. Run mix precommit."
+    },
+    {
+      "id": "F2-02",
+      "title": "Tabela densa - edicao inline por blur",
+      "priority": 12,
+      "passes": true,
+      "requirements": "Make Cotacao, Qtd, % Obj columns (and Valor for RF) editable inline. Fields render as plain text until focused, then become number inputs. Save on blur via phx-blur event handler (handle_event 'inline_save'). Visual feedback: emerald ring on focus (ring-accent-emerald), brief green flash on success, red border + tooltip on validation error. Validate: no negative qty/price, target_pct 0-100. Convert target_pct /100 before save. Recalculate all derived columns after save. Run mix precommit."
+    },
+    {
+      "id": "F2-03",
+      "title": "Tabela densa - ordenacao por colunas",
+      "priority": 13,
+      "passes": true,
+      "requirements": "Add clickable column headers for sorting. Sortable: Ticker (alpha), Valor (numeric), % Atual (numeric), % Obj (numeric), Diff (numeric), Nota (numeric). Click toggles asc/desc. Show up/down arrow on active sort column. Default sort: sort_order field. Store sort state in socket assigns (:sort_by, :sort_dir). Sort applied in-memory on the loaded assets list. Run mix precommit."
+    },
+    {
+      "id": "F2-04",
+      "title": "Tabela densa - acoes por linha (editar expandido e excluir)",
+      "priority": 14,
+      "passes": true,
+      "requirements": "Add actions column at end of each row with compact icon buttons: Edit (pencil icon, opens expanded form below row for secondary fields: nome, setor, tipo) and Delete (trash icon, with data-confirm). For classes with criteria, add a score icon that navigates to ScoringLive. Expanded edit row uses glass-card style, spans all columns. Save/Cancel buttons in expanded form. Run mix precommit."
+    },
+    {
+      "id": "F1-01",
+      "title": "Formulario de cadastro direto (sem registro vazio)",
+      "priority": 15,
+      "passes": true,
+      "requirements": "Change Add Asset button behavior: instead of creating an empty record, toggle a :show_add_form assign. When true, show inline form at top of asset table. Fields by class type: acoes/fiis/stocks/reits -> Ticker, Qty, Price, Target %. rendaFixa -> Name, Value, Liquidity (select). crypto/etfs -> Ticker, Qty, Price, Target %. Save button creates the asset, Cancel closes form. Flash success message. Form uses .input-field and .btn-primary classes. Run mix precommit."
+    },
+    {
+      "id": "F1-02",
+      "title": "Auto-complete local de ticker e validacao inline",
+      "priority": 16,
+      "passes": true,
+      "requirements": "Add HTML datalist to ticker input in add-asset form. On mount, load all tickers from portfolio (all classes) into a :all_tickers assign. Render as <datalist> with <option> for each ticker. Case-insensitive partial match is native browser behavior. Do not auto-fill other fields on selection. Add validation: ticker required (non-empty) for ticker classes, qty/price >= 0, target_pct 0-100. Show inline error messages (red text below field). Run mix precommit."
+    },
+    {
+      "id": "F5-01",
+      "title": "Tabela scoring_criteria e seed de criterios padrao",
+      "priority": 17,
+      "passes": true,
+      "requirements": "Run mix ecto.gen.migration create_scoring_criteria. Create table scoring_criteria: id (PK), portfolio_id (references portfolios), criteria_type (string, stock or fii), key (string), label (string), sort_order (integer), enabled (boolean default true). Add unique index on [portfolio_id, criteria_type, key]. Create Ecto schema Holder.Portfolio.ScoringCriterion. In Portfolio context, add ensure_default_criteria/1 that seeds 11 stock + 11 fii criteria from current constants. Call it from ensure_default_classes/1. Update stock_criteria/fii_criteria to accept portfolio_id and read from DB with fallback. Run mix precommit."
+    },
+    {
+      "id": "F5-02",
+      "title": "UI de gestao de criterios nas Settings",
+      "priority": 18,
+      "passes": true,
+      "requirements": "Add Criterios de Pontuacao section to SettingsLive. Two sub-tabs: Acoes/Stocks and FIIs/REITs. List criteria in order with: key (read-only), label (editable input), toggle enabled/disabled, delete button (with confirm), reorder up/down buttons. Add new criterion form at bottom: key input (alphanumeric + underscore), label input. Validate: unique key within criteria_type, non-empty label. Save changes via phx-blur on label, phx-click on toggle/delete/reorder. Use glass-card and .input-field classes. Run mix precommit."
+    },
+    {
+      "id": "F5-03",
+      "title": "Scoring e AI Prompt dinamicos com criterios do banco",
+      "priority": 19,
+      "passes": true,
+      "requirements": "Update ScoringLive and ClassDetailLive to read criteria from DB (via Portfolio.stock_criteria/1 and fii_criteria/1 with portfolio_id). Update AIScoring.Prompt to accept dynamic criteria list instead of hardcoded constants. Scores for removed/disabled criteria stay in DB but are not shown in UI. compute_score/1 only sums scores for active criteria. Prompt.user_prompt/3 builds questions from the criteria list dynamically. Run mix precommit."
+    }
+  ]
+}
