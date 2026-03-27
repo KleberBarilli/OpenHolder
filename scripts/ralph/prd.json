@@ -98,7 +98,7 @@
       "id": "F2-04",
       "title": "Tabela densa - acoes por linha (editar expandido e excluir)",
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "requirements": "Add actions column at end of each row with compact icon buttons: Edit (pencil icon, opens expanded form below row for secondary fields: nome, setor, tipo) and Delete (trash icon, with data-confirm). For classes with criteria, add a score icon that navigates to ScoringLive. Expanded edit row uses glass-card style, spans all columns. Save/Cancel buttons in expanded form. Run mix precommit."
     },
     {

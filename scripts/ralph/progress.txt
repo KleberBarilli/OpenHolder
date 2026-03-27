@@ -16,7 +16,7 @@ Started: Fri Mar 27 14:14:43 UTC 2026
 - LiveView tests: `use HolderWeb.ConnCase` + `import Phoenix.LiveViewTest` — on_mount hook auto-creates portfolio
 - Dashboard charts only render when `@summary.grand_total > 0` — don't assert canvas on empty portfolios
 - `validate_response/2` in AIScoring is private — cannot unit test directly
-- Dense table: non-RF has 11 columns, RF has 8 — update colspan on inline edit rows when adding/removing columns
+- Dense table: non-RF has 12 columns, RF has 9 (includes Actions column) — update thead, expanded row colspan, and tfoot when adding/removing columns
 - Use `hidden md:table-cell` for responsive table column visibility (Tailwind v4)
 - ClassDetailLive uses `handle_params/3` + `load_class/2` for tab switching — `@all_classes` is loaded once in mount
 - Inline edit inputs use `.inline-edit` CSS class (transparent bg, shows border on hover/focus) + `.InlineEdit` colocated JS hook for save-ok/save-err feedback
@@ -189,4 +189,18 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - For RF class, `:ticker` sort key sorts by `name` field (RF has no ticker) — unified via `&1.ticker || &1.name`
   - `Nota` sort treats `"SN"` (no scores) as -999 to sort them to the bottom on ascending
   - Sort state (`:sort_by`, `:sort_dir`) resets on tab switch in `load_class/2` to prevent stale sort on different column sets
+---
+
+## 2026-03-27 - F2-04
+- Added Actions column at end of each row with compact icon buttons: Edit (pencil), Delete (trash with data-confirm), Score (star, navigates to ScoringLive, only for classes with criteria)
+- Replaced row-level phx-click="toggle_edit" with explicit edit button in actions column
+- Simplified expanded edit row to only show secondary fields: Nome, Setor, Tipo (asset_type) with glass-card styling
+- Added Cancel button alongside Save in expanded form
+- Updated colspan for expanded row (RF: 9, non-RF: 12) and added empty td in tfoot for actions column
+- Files changed: lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - When adding/removing table columns, update 3 places: thead, tbody (both data row and expanded edit row colspan), and tfoot
+  - The `@asset_fields` module attribute in class_detail_live.ex already includes `asset_type` — no need to add it
+  - `data-confirm` attribute on buttons triggers browser confirm dialog before sending the phx-click event
+  - Scoring criteria panel was removed from expanded edit — use the star icon to navigate to ScoringLive instead
 ---
