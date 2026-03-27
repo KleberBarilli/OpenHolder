@@ -22,6 +22,9 @@ Started: Fri Mar 27 14:14:43 UTC 2026
 - Inline edit inputs use `.inline-edit` CSS class (transparent bg, shows border on hover/focus) + `.InlineEdit` colocated JS hook for save-ok/save-err feedback
 - `phx-blur` on `<input>` sends `%{"value" => el.value}` along with `phx-value-*` attributes — no extra JS needed for value extraction
 - `Portfolio.list_all_tickers/1` returns distinct tickers across all classes — useful for autocomplete/datalist features
+- `ScoringCriterion` schema stores criteria in DB — use `stock_criteria(portfolio_id)` / `fii_criteria(portfolio_id)` for dynamic criteria, `/0` variants for backward compat
+- `list_all_criteria/2` returns ALL criteria (including disabled) for management UIs; `list_criteria/2` returns only enabled for scoring/display
+- In LiveView modules, ALL `handle_event/3` clauses must be grouped together — don't interleave private functions between them
 ---
 
 ## 2026-03-27 - T01
@@ -232,4 +235,34 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - `list_all_tickers/1` uses `distinct: true` in Ecto query for deduplication across classes
   - The `autocomplete="off"` attribute on the input prevents browser autofill from competing with the datalist
   - Validation for the add-asset form was already comprehensive from F1-01 — F1-02 mostly added the datalist feature
+---
+
+## 2026-03-27 - F5-01
+- Created migration `create_scoring_criteria` with table: portfolio_id, criteria_type, key, label, sort_order, enabled + unique index on [portfolio_id, criteria_type, key]
+- Created Ecto schema `Holder.Portfolio.ScoringCriterion` with changeset validation (criteria_type in stock/fii, key format, unique constraint)
+- Added `ensure_default_criteria/1` that seeds 11 stock + 11 fii criteria from existing `@stock_criteria`/`@fii_criteria` constants — idempotent using MapSet lookup
+- Called `ensure_default_criteria/1` at end of `ensure_default_classes/1` so new portfolios auto-seed criteria
+- Added `stock_criteria/1` and `fii_criteria/1` (with portfolio_id) that read from DB with fallback to constants when empty
+- Added `list_criteria/2` helper that queries enabled criteria ordered by sort_order, returns `%{id, label, q}` maps matching existing format
+- Files changed: lib/holder/portfolio.ex, lib/holder/portfolio/scoring_criterion.ex (new), priv/repo/migrations/20260327154621_create_scoring_criteria.exs (new)
+- **Learnings for future iterations:**
+  - `list_criteria/2` maps DB `key` to `id` and `label` to both `label` and `q` fields — the Prompt module uses `cr.q` for questions, falling back to `@stock_questions`/`@fii_questions` maps for known IDs
+  - `ensure_default_criteria/1` is called from `ensure_default_classes/1`, so all existing test setup blocks that call `ensure_default_classes` will also seed criteria
+  - The `q` field in criteria maps from DB is set to `label` — for known criteria IDs, Prompt module's `@stock_questions`/`@fii_questions` maps provide the detailed English questions for AI scoring
+  - Zero-arity `stock_criteria/0` and `fii_criteria/0` still exist for backward compatibility — new code should prefer the `/1` versions with portfolio_id
+---
+
+## 2026-03-27 - F5-02
+- Added "Critérios de Pontuação" section to SettingsLive with sub-tabs for Ações/Stocks and FIIs/REITs
+- Each criterion row shows: key (read-only), label (editable input with blur save), toggle enabled/disabled, reorder up/down buttons, delete with confirm
+- Add new criterion form at bottom with key/label inputs and validation (unique key, non-empty, alpha start)
+- Portfolio context: added `list_all_criteria/2`, `get_criterion!/1`, `create_criterion/2`, `update_criterion/2`, `delete_criterion/1`, `reorder_criterion/3`
+- Also removed unused `macro_entries/1` function that was causing a pre-existing warning in settings_live.ex
+- Files changed: lib/holder/portfolio.ex, lib/holder_web/live/settings_live.ex, lib/holder_web/live/settings_live.html.heex, scripts/ralph/prd.json
+- **Learnings for future iterations:**
+  - `list_all_criteria/2` returns all criteria (including disabled), while `list_criteria/2` only returns enabled — use the former for management UIs
+  - Reorder logic swaps `sort_order` values between adjacent items in a transaction — requires fetching both items from `list_all_criteria`
+  - `handle_event` clauses must be grouped together in LiveView modules — don't put private functions between them or you'll get --warnings-as-errors failures
+  - `ScoringCriterion.changeset` validates key format `^[a-zA-Z][a-zA-Z0-9_]*$` — the UI also sanitizes input before submission
+  - The unique constraint on `[portfolio_id, criteria_type, key]` catches duplicate keys — traverse_errors extracts the message for display
 ---

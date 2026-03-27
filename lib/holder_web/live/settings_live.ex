@@ -15,6 +15,9 @@ defmodule HolderWeb.SettingsLive do
     providers = Holder.AIScoring.providers()
     selected_provider = settings.ai_provider || ""
 
+    stock_criteria = Portfolio.list_all_criteria(portfolio.id, "stock")
+    fii_criteria = Portfolio.list_all_criteria(portfolio.id, "fii")
+
     {:ok,
      socket
      |> assign(:portfolio_id, portfolio.id)
@@ -33,15 +36,20 @@ defmodule HolderWeb.SettingsLive do
      |> assign(:selected_provider, selected_provider)
      |> assign(:has_gemini_key, settings.gemini_api_key_enc not in [nil, ""])
      |> assign(:ai_test_status, nil)
+     |> assign(:criteria_tab, "stock")
+     |> assign(:stock_criteria, stock_criteria)
+     |> assign(:fii_criteria, fii_criteria)
+     |> assign(:criteria_errors, %{})
      |> allow_upload(:csv, accept: ~w(.csv), max_entries: 1, max_file_size: 1_000_000)}
   end
 
   @impl true
   @setting_fields ~w(dollar_rate iof spread aporte_value classes_to_buy min_diff_ignore)
   def handle_event("update_setting", params, socket) do
-    attrs = params
-    |> Map.take(@setting_fields)
-    |> Enum.into(%{}, fn {k, v} -> {String.to_existing_atom(k), parse_num(v)} end)
+    attrs =
+      params
+      |> Map.take(@setting_fields)
+      |> Enum.into(%{}, fn {k, v} -> {String.to_existing_atom(k), parse_num(v)} end)
 
     Portfolio.update_settings(socket.assigns.portfolio_id, attrs)
     settings = Portfolio.get_settings(socket.assigns.portfolio_id)
@@ -74,7 +82,12 @@ defmodule HolderWeb.SettingsLive do
     else
       encrypted = Vault.encrypt(key)
       key_field = provider_key_field(provider)
-      Portfolio.update_settings(socket.assigns.portfolio_id, Map.put(%{ai_provider: provider}, key_field, encrypted))
+
+      Portfolio.update_settings(
+        socket.assigns.portfolio_id,
+        Map.put(%{ai_provider: provider}, key_field, encrypted)
+      )
+
       settings = Portfolio.get_settings(socket.assigns.portfolio_id)
 
       {:noreply,
@@ -100,10 +113,11 @@ defmodule HolderWeb.SettingsLive do
   end
 
   def handle_event("update_target", %{"class" => class, "value" => value}, socket) do
-    pct = case Float.parse(value) do
-      {f, _} -> f / 100
-      :error -> 0.0
-    end
+    pct =
+      case Float.parse(value) do
+        {f, _} -> f / 100
+        :error -> 0.0
+      end
 
     Portfolio.update_macro_target(socket.assigns.portfolio_id, class, pct)
     targets = Portfolio.get_macro_targets_map(socket.assigns.portfolio_id)
@@ -134,10 +148,13 @@ defmodule HolderWeb.SettingsLive do
          |> assign(:import_csv_raw, csv_content)
          |> assign(:import_preview, preview)
          |> assign(:import_new_classes, preview.new_classes)}
+
       [{_, {:error, reason}}] ->
         {:noreply, put_flash(socket, :error, gettext("Erro: %{reason}", reason: reason))}
+
       [] ->
         {:noreply, put_flash(socket, :error, gettext("Selecione um arquivo CSV"))}
+
       other ->
         {:noreply, put_flash(socket, :error, "Unexpected: #{inspect(other)}")}
     end
@@ -145,23 +162,27 @@ defmodule HolderWeb.SettingsLive do
 
   # Step 2: Update new class config during review
   def handle_event("update_new_class", %{"key" => key} = params, socket) do
-    new_classes = Enum.map(socket.assigns.import_new_classes, fn c ->
-      if c.key == key do
-        c
-        |> Map.put(:label, params["label"] || c.label)
-        |> Map.put(:color, params["color"] || c.color)
-        |> Map.put(:currency, params["currency"] || c.currency)
-      else
-        c
-      end
-    end)
+    new_classes =
+      Enum.map(socket.assigns.import_new_classes, fn c ->
+        if c.key == key do
+          c
+          |> Map.put(:label, params["label"] || c.label)
+          |> Map.put(:color, params["color"] || c.color)
+          |> Map.put(:currency, params["currency"] || c.currency)
+        else
+          c
+        end
+      end)
+
     {:noreply, assign(socket, :import_new_classes, new_classes)}
   end
 
   def handle_event("toggle_skip_class", %{"key" => key}, socket) do
-    new_classes = Enum.map(socket.assigns.import_new_classes, fn c ->
-      if c.key == key, do: Map.put(c, :skip, !c.skip), else: c
-    end)
+    new_classes =
+      Enum.map(socket.assigns.import_new_classes, fn c ->
+        if c.key == key, do: Map.put(c, :skip, !c.skip), else: c
+      end)
+
     {:noreply, assign(socket, :import_new_classes, new_classes)}
   end
 
@@ -170,19 +191,22 @@ defmodule HolderWeb.SettingsLive do
     pid = socket.assigns.portfolio_id
     csv = socket.assigns.import_csv_raw
 
-    class_configs = socket.assigns.import_new_classes
-    |> Enum.into(%{}, fn c -> {c.key, c} end)
+    class_configs =
+      socket.assigns.import_new_classes
+      |> Enum.into(%{}, fn c -> {c.key, c} end)
 
     case Portfolio.import_csv_confirmed(pid, csv, class_configs) do
       {:ok, results} ->
         all_classes = Portfolio.list_all_asset_classes(pid)
         asset_classes = Enum.filter(all_classes, & &1.enabled)
+
         {:noreply,
          socket
          |> assign(:import_step, :done)
          |> assign(:import_results, results)
          |> assign(:all_classes, all_classes)
          |> assign(:asset_classes, asset_classes)}
+
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, gettext("Erro: %{reason}", reason: reason))}
     end
@@ -201,22 +225,37 @@ defmodule HolderWeb.SettingsLive do
 
   # ── Asset Classes CRUD ──────────────────────────────────
 
-  def handle_event("add_class", %{"key" => key, "label" => label, "color" => color, "currency" => currency}, socket) do
+  def handle_event(
+        "add_class",
+        %{"key" => key, "label" => label, "color" => color, "currency" => currency},
+        socket
+      ) do
     key = key |> String.trim() |> String.replace(~r/[^a-zA-Z0-9_]/, "")
+
     if key != "" and label != "" do
       Portfolio.create_asset_class(socket.assigns.portfolio_id, %{
-        key: key, label: String.trim(label), color: color, currency: currency
+        key: key,
+        label: String.trim(label),
+        color: color,
+        currency: currency
       })
     end
+
     reload_classes(socket)
   end
 
   @class_fields ~w(label color currency)
   def handle_event("update_class", %{"id" => id} = params, socket) do
-    attrs = params |> Map.take(@class_fields) |> Enum.into(%{}, fn {k, v} -> {String.to_existing_atom(k), v} end)
+    attrs =
+      params
+      |> Map.take(@class_fields)
+      |> Enum.into(%{}, fn {k, v} -> {String.to_existing_atom(k), v} end)
+
     Portfolio.update_asset_class(String.to_integer(id), attrs)
     {_, socket} = reload_classes(socket)
-    {:noreply, socket |> assign(:edit_class_id, nil) |> put_flash(:info, gettext("Classe atualizada!"))}
+
+    {:noreply,
+     socket |> assign(:edit_class_id, nil) |> put_flash(:info, gettext("Classe atualizada!"))}
   end
 
   def handle_event("toggle_class", %{"id" => id}, socket) do
@@ -237,10 +276,71 @@ defmodule HolderWeb.SettingsLive do
     {:noreply, assign(socket, :edit_class_id, new_id)}
   end
 
-  defp reload_classes(socket) do
-    all_classes = Portfolio.list_all_asset_classes(socket.assigns.portfolio_id)
-    asset_classes = Enum.filter(all_classes, & &1.enabled)
-    {:noreply, socket |> assign(:all_classes, all_classes) |> assign(:asset_classes, asset_classes)}
+  # ── Scoring Criteria ──────────────────────────────────────
+
+  def handle_event("switch_criteria_tab", %{"tab" => tab}, socket) do
+    {:noreply, assign(socket, :criteria_tab, tab)}
+  end
+
+  def handle_event("update_criterion_label", %{"id" => id, "value" => label}, socket) do
+    label = String.trim(label)
+
+    if label != "" do
+      Portfolio.update_criterion(String.to_integer(id), %{label: label})
+    end
+
+    {:noreply, reload_criteria(socket)}
+  end
+
+  def handle_event("toggle_criterion", %{"id" => id}, socket) do
+    criterion = Portfolio.get_criterion!(String.to_integer(id))
+    Portfolio.update_criterion(criterion.id, %{enabled: !criterion.enabled})
+    {:noreply, reload_criteria(socket)}
+  end
+
+  def handle_event("delete_criterion", %{"id" => id}, socket) do
+    Portfolio.delete_criterion(String.to_integer(id))
+    {:noreply, reload_criteria(socket)}
+  end
+
+  def handle_event("reorder_criterion", %{"id" => id, "dir" => dir}, socket) do
+    direction = if dir == "up", do: :up, else: :down
+    Portfolio.reorder_criterion(String.to_integer(id), direction, socket.assigns.portfolio_id)
+    {:noreply, reload_criteria(socket)}
+  end
+
+  def handle_event("add_criterion", %{"key" => key, "label" => label}, socket) do
+    key = key |> String.trim() |> String.replace(~r/[^a-zA-Z0-9_]/, "")
+    label = String.trim(label)
+    criteria_type = socket.assigns.criteria_tab
+
+    cond do
+      key == "" or label == "" ->
+        {:noreply,
+         assign(socket, :criteria_errors, %{add: gettext("Key e label são obrigatórios")})}
+
+      not Regex.match?(~r/^[a-zA-Z][a-zA-Z0-9_]*$/, key) ->
+        {:noreply,
+         assign(socket, :criteria_errors, %{add: gettext("Key deve começar com letra")})}
+
+      true ->
+        case Portfolio.create_criterion(socket.assigns.portfolio_id, %{
+               criteria_type: criteria_type,
+               key: key,
+               label: label
+             }) do
+          {:ok, _} ->
+            {:noreply, socket |> assign(:criteria_errors, %{}) |> reload_criteria()}
+
+          {:error, changeset} ->
+            msg =
+              changeset
+              |> Ecto.Changeset.traverse_errors(fn {msg, _} -> msg end)
+              |> Enum.map_join(", ", fn {_k, v} -> Enum.join(v, ", ") end)
+
+            {:noreply, assign(socket, :criteria_errors, %{add: msg})}
+        end
+    end
   end
 
   def handle_event("export", _params, socket) do
@@ -260,8 +360,11 @@ defmodule HolderWeb.SettingsLive do
     end
 
     Portfolio.update_settings(socket.assigns.portfolio_id, %{
-      dollar_rate: 5.80, iof: 0.035, spread: 0.01,
-      aporte_value: 0.0, classes_to_buy: 0
+      dollar_rate: 5.80,
+      iof: 0.035,
+      spread: 0.01,
+      aporte_value: 0.0,
+      classes_to_buy: 0
     })
 
     settings = Portfolio.get_settings(socket.assigns.portfolio_id)
@@ -276,24 +379,34 @@ defmodule HolderWeb.SettingsLive do
      |> put_flash(:info, gettext("Dados resetados com sucesso"))}
   end
 
+  defp reload_criteria(socket) do
+    pid = socket.assigns.portfolio_id
+
+    socket
+    |> assign(:stock_criteria, Portfolio.list_all_criteria(pid, "stock"))
+    |> assign(:fii_criteria, Portfolio.list_all_criteria(pid, "fii"))
+  end
+
+  defp reload_classes(socket) do
+    all_classes = Portfolio.list_all_asset_classes(socket.assigns.portfolio_id)
+    asset_classes = Enum.filter(all_classes, & &1.enabled)
+
+    {:noreply,
+     socket |> assign(:all_classes, all_classes) |> assign(:asset_classes, asset_classes)}
+  end
+
   defp parse_num(val) when is_binary(val) do
     case Float.parse(val) do
       {f, _} -> f
       :error -> 0.0
     end
   end
-  defp parse_num(val), do: val
 
-  defp macro_entries(socket) do
-    (socket.assigns[:all_classes] || [])
-    |> Enum.filter(& &1.enabled)
-    |> Enum.map(fn ac -> %{key: ac.key, label: ac.label, color: ac.color} end)
-  end
+  defp parse_num(val), do: val
 
   defp provider_key_field("gemini"), do: :gemini_api_key_enc
   defp provider_key_field(_), do: :gemini_api_key_enc
 
   defp provider_enc_key("gemini", settings), do: settings.gemini_api_key_enc
   defp provider_enc_key(_, _), do: nil
-
 end

@@ -74,6 +74,66 @@ defmodule Holder.Portfolio do
     end)
   end
 
+  def list_all_criteria(portfolio_id, criteria_type) do
+    Repo.all(
+      from sc in ScoringCriterion,
+        where:
+          sc.portfolio_id == ^portfolio_id and
+            sc.criteria_type == ^criteria_type,
+        order_by: sc.sort_order
+    )
+  end
+
+  def get_criterion!(id), do: Repo.get!(ScoringCriterion, id)
+
+  def create_criterion(portfolio_id, attrs) do
+    max_order =
+      Repo.one(
+        from sc in ScoringCriterion,
+          where:
+            sc.portfolio_id == ^portfolio_id and
+              sc.criteria_type == ^attrs[:criteria_type],
+          select: max(sc.sort_order)
+      ) || -1
+
+    %ScoringCriterion{}
+    |> ScoringCriterion.changeset(Map.put(attrs, :sort_order, max_order + 1))
+    |> Ecto.Changeset.put_change(:portfolio_id, portfolio_id)
+    |> Repo.insert()
+  end
+
+  def update_criterion(id, attrs) do
+    get_criterion!(id)
+    |> ScoringCriterion.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_criterion(id) do
+    get_criterion!(id) |> Repo.delete()
+  end
+
+  def reorder_criterion(id, direction, portfolio_id) do
+    criterion = get_criterion!(id)
+    criteria = list_all_criteria(portfolio_id, criterion.criteria_type)
+
+    idx = Enum.find_index(criteria, &(&1.id == criterion.id))
+    swap_idx = if direction == :up, do: idx - 1, else: idx + 1
+
+    if swap_idx >= 0 and swap_idx < length(criteria) do
+      other = Enum.at(criteria, swap_idx)
+
+      Repo.transaction(fn ->
+        criterion
+        |> ScoringCriterion.changeset(%{sort_order: other.sort_order})
+        |> Repo.update!()
+
+        other
+        |> ScoringCriterion.changeset(%{sort_order: criterion.sort_order})
+        |> Repo.update!()
+      end)
+    end
+  end
+
   # ── Asset Classes (from database) ─────────────────────────
 
   @default_classes [

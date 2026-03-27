@@ -119,14 +119,14 @@
       "id": "F5-01",
       "title": "Tabela scoring_criteria e seed de criterios padrao",
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "requirements": "Run mix ecto.gen.migration create_scoring_criteria. Create table scoring_criteria: id (PK), portfolio_id (references portfolios), criteria_type (string, stock or fii), key (string), label (string), sort_order (integer), enabled (boolean default true). Add unique index on [portfolio_id, criteria_type, key]. Create Ecto schema Holder.Portfolio.ScoringCriterion. In Portfolio context, add ensure_default_criteria/1 that seeds 11 stock + 11 fii criteria from current constants. Call it from ensure_default_classes/1. Update stock_criteria/fii_criteria to accept portfolio_id and read from DB with fallback. Run mix precommit."
     },
     {
       "id": "F5-02",
       "title": "UI de gestao de criterios nas Settings",
       "priority": 18,
-      "passes": false,
+      "passes": true,
       "requirements": "Add Criterios de Pontuacao section to SettingsLive. Two sub-tabs: Acoes/Stocks and FIIs/REITs. List criteria in order with: key (read-only), label (editable input), toggle enabled/disabled, delete button (with confirm), reorder up/down buttons. Add new criterion form at bottom: key input (alphanumeric + underscore), label input. Validate: unique key within criteria_type, non-empty label. Save changes via phx-blur on label, phx-click on toggle/delete/reorder. Use glass-card and .input-field classes. Run mix precommit."
     },
     {
