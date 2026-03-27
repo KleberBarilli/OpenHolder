@@ -23,6 +23,6 @@ defmodule Holder.Portfolio.Settings do
   def changeset(settings, attrs) do
     settings
     |> cast(attrs, [:dollar_rate, :iof, :spread, :aporte_value, :classes_to_buy, :min_diff_ignore, :brapi_token, :ai_provider, :openai_api_key_enc, :gemini_api_key_enc, :claude_api_key_enc])
-    |> validate_inclusion(:ai_provider, [nil, "gemini"])
+    |> validate_inclusion(:ai_provider, [nil | Map.keys(Holder.AIScoring.providers())])
   end
 end

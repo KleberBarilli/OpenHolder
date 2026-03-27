@@ -9,6 +9,13 @@ defmodule Holder.AIScoring do
   alias Holder.Vault
   require Logger
 
+  @providers %{
+    "gemini" => Holder.AIScoring.Gemini
+  }
+
+  @doc "Returns the map of registered provider keys to modules."
+  def providers, do: @providers
+
   @doc """
   Scores a single asset using the configured AI provider.
   Returns `{:ok, %{scores: map, total: integer}}` or `{:error, reason}`.
@@ -17,13 +24,13 @@ defmodule Holder.AIScoring do
     Logger.info("AI Scoring: starting #{asset.ticker} (#{asset.asset_class})")
 
     result =
-      with {:ok, provider, api_key} <- resolve_provider(settings) do
+      with {:ok, module, api_key} <- resolve_provider(settings) do
         criteria_type = criteria_type_for(asset.asset_class)
         criteria = criteria_for(criteria_type)
 
-        Logger.info("AI Scoring: calling #{provider} for #{asset.ticker} (#{criteria_type}, #{length(criteria)} criteria)")
+        Logger.info("AI Scoring: calling #{module.name()} for #{asset.ticker} (#{criteria_type}, #{length(criteria)} criteria)")
 
-        case call_provider(provider, asset.ticker, criteria_type, criteria, api_key) do
+        case module.score(asset.ticker, criteria_type, criteria, api_key) do
           {:ok, raw} ->
             Logger.info("AI Scoring: got response for #{asset.ticker}, validating...")
 
@@ -89,46 +96,52 @@ defmodule Holder.AIScoring do
   end
 
   @doc "Tests the connection for the given provider and encrypted key."
-  def test_connection(provider, encrypted_key) do
-    api_key = Vault.decrypt(encrypted_key)
+  def test_connection(provider_key, encrypted_key) do
+    case Map.fetch(@providers, provider_key) do
+      {:ok, module} ->
+        api_key = Vault.decrypt(encrypted_key)
 
-    if is_nil(api_key) do
-      {:error, :no_api_key}
-    else
-      Logger.info("AI Scoring: testing connection to #{provider}")
+        if is_nil(api_key) do
+          {:error, :no_api_key}
+        else
+          Logger.info("AI Scoring: testing connection to #{module.name()}")
+          module.test_connection(api_key)
+        end
 
-      case provider do
-        "gemini" -> Holder.AIScoring.Gemini.test_connection(api_key)
-        _ -> {:error, :unknown_provider}
-      end
+      :error ->
+        {:error, :unknown_provider}
     end
   end
 
   # ── Private ──────────────────────────────────────────────
 
   defp resolve_provider(settings) do
-    provider = settings.ai_provider
-
-    enc_key =
-      case provider do
-        "gemini" -> settings.gemini_api_key_enc
-        _ -> nil
-      end
-
-    api_key = Vault.decrypt(enc_key)
+    provider_key = settings.ai_provider
 
     cond do
-      is_nil(provider) or provider == "" -> {:error, :no_provider_configured}
-      is_nil(api_key) -> {:error, :no_api_key}
-      true -> {:ok, provider, api_key}
+      is_nil(provider_key) or provider_key == "" ->
+        {:error, :no_provider_configured}
+
+      true ->
+        case Map.fetch(@providers, provider_key) do
+          {:ok, module} ->
+            enc_key = api_key_field(provider_key, settings)
+            api_key = Vault.decrypt(enc_key)
+
+            if is_nil(api_key) do
+              {:error, :no_api_key}
+            else
+              {:ok, module, api_key}
+            end
+
+          :error ->
+            {:error, :unknown_provider}
+        end
     end
   end
 
-  defp call_provider("gemini", ticker, criteria_type, criteria, api_key) do
-    Holder.AIScoring.Gemini.score(ticker, criteria_type, criteria, api_key)
-  end
-
-  defp call_provider(_, _, _, _, _), do: {:error, :unknown_provider}
+  defp api_key_field("gemini", settings), do: settings.gemini_api_key_enc
+  defp api_key_field(_, _), do: nil
 
   defp validate_response(%{"scores" => scores_map}, criteria) when is_map(scores_map) do
     valid_ids = MapSet.new(Enum.map(criteria, & &1.id))
