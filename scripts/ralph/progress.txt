@@ -175,3 +175,18 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - `push_event` returns socket — must rebind or chain with pipe; used in both ok/err paths
   - Hidden mode needs special handling for inline inputs — show dots placeholder instead of input when `@display_mode == :hidden`
 ---
+
+## 2026-03-27 - F2-03
+- Added clickable column headers for sorting in ClassDetailLive dense table
+- Sortable columns: Ticker/Nome (alpha), Valor (numeric), % Atual (numeric), % Obj (numeric), Diff (numeric), Nota (numeric)
+- Click toggles asc/desc, shows chevron-up/down arrow on active sort column
+- Default sort: sort_order asc. Sort resets when switching tabs via handle_params
+- Sort applied in-memory via `sorted_assets/1` helper called from template
+- Files changed: lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - `sorted_assets/1` takes `assigns` map and computes sort in the template — avoids re-sorting on every assign change by deferring to render time
+  - Sort atoms (`:valor`, `:pct_atual`, `:diff`, `:nota`) are created by function head pattern matching — `String.to_existing_atom/1` works because they exist at compile time
+  - For RF class, `:ticker` sort key sorts by `name` field (RF has no ticker) — unified via `&1.ticker || &1.name`
+  - `Nota` sort treats `"SN"` (no scores) as -999 to sort them to the bottom on ascending
+  - Sort state (`:sort_by`, `:sort_dir`) resets on tab switch in `load_class/2` to prevent stale sort on different column sets
+---

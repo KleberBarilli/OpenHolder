@@ -91,7 +91,7 @@
       "id": "F2-03",
       "title": "Tabela densa - ordenacao por colunas",
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "requirements": "Add clickable column headers for sorting. Sortable: Ticker (alpha), Valor (numeric), % Atual (numeric), % Obj (numeric), Diff (numeric), Nota (numeric). Click toggles asc/desc. Show up/down arrow on active sort column. Default sort: sort_order field. Store sort state in socket assigns (:sort_by, :sort_dir). Sort applied in-memory on the loaded assets list. Run mix precommit."
     },
     {
