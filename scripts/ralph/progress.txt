@@ -21,6 +21,7 @@ Started: Fri Mar 27 14:14:43 UTC 2026
 - ClassDetailLive uses `handle_params/3` + `load_class/2` for tab switching — `@all_classes` is loaded once in mount
 - Inline edit inputs use `.inline-edit` CSS class (transparent bg, shows border on hover/focus) + `.InlineEdit` colocated JS hook for save-ok/save-err feedback
 - `phx-blur` on `<input>` sends `%{"value" => el.value}` along with `phx-value-*` attributes — no extra JS needed for value extraction
+- `Portfolio.list_all_tickers/1` returns distinct tickers across all classes — useful for autocomplete/datalist features
 ---
 
 ## 2026-03-27 - T01
@@ -203,4 +204,32 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - The `@asset_fields` module attribute in class_detail_live.ex already includes `asset_type` — no need to add it
   - `data-confirm` attribute on buttons triggers browser confirm dialog before sending the phx-click event
   - Scoring criteria panel was removed from expanded edit — use the star icon to navigate to ScoringLive instead
+---
+
+## 2026-03-27 - F1-01
+- Replaced empty-record creation (`add_asset` event) with inline add-asset form (`toggle_add_form` / `create_new_asset` events)
+- Form renders at top of dense table tbody with class-specific fields: rendaFixa (Name, Value, Liquidity select) vs ticker classes (Ticker, Qty, Price, Target %)
+- Added `validate_add_form/2` with per-field validation and inline error display (red text below fields)
+- Ticker is uppercased on save; target_pct is /100 before save; empty numeric fields default to 0.0
+- Form resets on tab switch via `load_class/2`
+- Updated existing test to reference new `toggle_add_form` event
+- Files changed: lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex, test/holder_web/live/class_detail_live_test.exs
+- **Learnings for future iterations:**
+  - The add form colspan must match the table column count (9 for RF, 12 for non-RF) — same as the expanded edit row
+  - `parse_float/1` helper is useful for safely extracting numeric form values with 0.0 default
+  - Form validation is done manually (not via changesets) since asset creation goes through `Portfolio.create_asset/2` which takes a plain map
+  - `show_add_form` and `add_form_errors` assigns need to be reset in both `load_class/2` (tab switch) and on successful save
+---
+
+## 2026-03-27 - F1-02
+- Added `Portfolio.list_all_tickers/1` function that returns distinct non-nil tickers across all classes for a portfolio
+- Added `:all_tickers` assign loaded in mount and refreshed in `reload/1`
+- Added HTML `<datalist id="ticker-suggestions">` linked to the ticker input via `list="ticker-suggestions"` attribute
+- Validation was already fully implemented in F1-01 (ticker required, qty/price >= 0, target_pct 0-100, inline error messages)
+- Files changed: lib/holder/portfolio.ex (new function), lib/holder_web/live/class_detail_live.ex (assign), lib/holder_web/live/class_detail_live.html.heex (datalist)
+- **Learnings for future iterations:**
+  - HTML `<datalist>` provides native browser autocomplete — no JS needed, case-insensitive partial match is built-in
+  - `list_all_tickers/1` uses `distinct: true` in Ecto query for deduplication across classes
+  - The `autocomplete="off"` attribute on the input prevents browser autofill from competing with the datalist
+  - Validation for the add-asset form was already comprehensive from F1-01 — F1-02 mostly added the datalist feature
 ---

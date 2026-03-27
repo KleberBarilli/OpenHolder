@@ -105,14 +105,14 @@
       "id": "F1-01",
       "title": "Formulario de cadastro direto (sem registro vazio)",
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "requirements": "Change Add Asset button behavior: instead of creating an empty record, toggle a :show_add_form assign. When true, show inline form at top of asset table. Fields by class type: acoes/fiis/stocks/reits -> Ticker, Qty, Price, Target %. rendaFixa -> Name, Value, Liquidity (select). crypto/etfs -> Ticker, Qty, Price, Target %. Save button creates the asset, Cancel closes form. Flash success message. Form uses .input-field and .btn-primary classes. Run mix precommit."
     },
     {
       "id": "F1-02",
       "title": "Auto-complete local de ticker e validacao inline",
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "requirements": "Add HTML datalist to ticker input in add-asset form. On mount, load all tickers from portfolio (all classes) into a :all_tickers assign. Render as <datalist> with <option> for each ticker. Case-insensitive partial match is native browser behavior. Do not auto-fill other fields on selection. Add validation: ticker required (non-empty) for ticker classes, qty/price >= 0, target_pct 0-100. Show inline error messages (red text below field). Run mix precommit."
     },
     {
