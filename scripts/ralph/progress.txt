@@ -1,0 +1,160 @@
+# Ralph Progress Log
+Started: Fri Mar 27 14:14:43 UTC 2026
+
+## Codebase Patterns
+- `Holder.AIScoring.providers/0` returns the `@providers` map — use it for dynamic provider registration and Settings validation
+- Use `Portfolio.get_or_create_default_portfolio()` + `ensure_default_classes(portfolio.id)` in test setup blocks
+- The unique constraint on asset_classes is `[:portfolio_id, :key]` — errors appear on `:portfolio_id`, not `:key`
+- `list_assets/2` and `get_asset!/1` auto-preload `:asset_scores`
+- `mix precommit` runs compile --warnings-as-errors, deps.unlock --unused, format, test — pre-existing warnings in dashboard_live.ex, settings_live.ex, hooks.ex, quote_server.ex cause failure
+- Pre-existing failing test: `HolderWeb.PageControllerTest` (home page text assertion mismatch)
+- Use `errors_on(changeset)` from DataCase to test changeset validation errors
+- Macro targets are stored as fractional values (0.25 = 25%), not percentages
+- `export_json/1` iterates a hardcoded list of 7 class keys, not dynamic from DB
+- `import_json/2` does full replace per class (deletes then recreates), not merge
+- Vault and Prompt tests don't need DataCase — use `ExUnit.Case, async: true` for speed
+- LiveView tests: `use HolderWeb.ConnCase` + `import Phoenix.LiveViewTest` — on_mount hook auto-creates portfolio
+- Dashboard charts only render when `@summary.grand_total > 0` — don't assert canvas on empty portfolios
+- `validate_response/2` in AIScoring is private — cannot unit test directly
+- Dense table: non-RF has 11 columns, RF has 8 — update colspan on inline edit rows when adding/removing columns
+- Use `hidden md:table-cell` for responsive table column visibility (Tailwind v4)
+- ClassDetailLive uses `handle_params/3` + `load_class/2` for tab switching — `@all_classes` is loaded once in mount
+---
+
+## 2026-03-27 - T01
+- Fixed and verified existing portfolio_test.exs covering CRUD for asset_classes (list, list_all, create, update, delete, get_by_key, ensure_default_classes idempotence) and assets (list, create, get!, update, delete, score preloading)
+- Files changed: test/holder/portfolio_test.exs (fixed duplicate key assertion — error is on :portfolio_id not :key)
+- **Learnings for future iterations:**
+  - The test file already existed with 21 tests but had 1 bug: duplicate key unique constraint error shows on `:portfolio_id` field, not `:key`
+  - `mix precommit` is broken by pre-existing warnings-as-errors — tests themselves pass fine
+  - No factories needed — Portfolio context functions work directly for test data setup
+---
+
+## 2026-03-27 - T02
+- Created test/holder/portfolio_calculations_test.exs with 35 tests covering: compute_score/1, get_macro_targets_map/1, update_macro_target/3, compute_macro_summary/1 (empty portfolio, BRL calc, USD with exchange rate, rendaFixa value field, Buy/Hold signals), format_brl/1, format_usd/1, format_pct/1, safe_color/1 — including nil/non-numeric edge cases
+- Files changed: test/holder/portfolio_calculations_test.exs (new)
+- **Learnings for future iterations:**
+  - `compute_score/1` returns the string `"SN"` (not a number) when asset has no scores — mixed return type
+  - `format_brl` uses `:erlang.float_to_binary(val / 1, [decimals: 2])` — the `/ 1` coerces integers to float
+  - `compute_macro_summary/1` detects rendaFixa-type classes by checking `ac.key == "rendaFixa"` OR BRL assets with value > 0 and qty == 0/nil
+  - Default macro targets are created in `create_default_portfolio` — no need to manually set them up in tests
+  - `update_settings/2` requires the settings record to already exist (created automatically with portfolio)
+---
+
+## 2026-03-27 - T03
+- Created test/holder/portfolio_import_export_test.exs with 24 tests covering: export_json/1 (structure, API key exclusion, asset data, scores for acoes/fiis, no scores for other classes, rendaFixa fields, empty portfolio), import_json/2 (roundtrip restore, score restore, settings update, macro targets update, invalid JSON error), parse_csv/2 (valid CSV grouping, new class detection, existing classes, empty CSV, summary counts, missing asset_class rows), import_csv_confirmed/3 (basic import, new class creation, skip config, numeric parsing, blank fields as nil)
+- Files changed: test/holder/portfolio_import_export_test.exs (new)
+- **Learnings for future iterations:**
+  - `parse_csv/2` does NOT return error for empty string — it returns `{:ok, %{total: 0, ...}}` since splitting produces a header-only list
+  - Macro targets are stored as fractional values (0.25 = 25%), not percentages — import_json stores values as-is from the JSON
+  - `export_json/1` iterates hardcoded list of 7 class keys, not dynamic from DB
+  - `import_json/2` deletes existing assets per class before importing — it's a full replace, not merge
+  - `get_scores_map/1` returns `%{criterion_id => value}` map — useful for verifying score roundtrips
+---
+
+## 2026-03-27 - T04
+- Created test/holder/vault_test.exs (10 tests): encrypt/decrypt roundtrip, nil/empty handling, tampered ciphertext, nonce uniqueness
+- Created test/holder/ai_scoring/prompt_test.exs (12 tests): system_prompt content, user_prompt for stock and fii types (ticker inclusion, criteria IDs, type labels, numbered questions, JSON request, format consistency)
+- validate_response/2 is private in Holder.AIScoring — cannot be tested directly without exposing it
+- Files changed: test/holder/vault_test.exs (new), test/holder/ai_scoring/prompt_test.exs (new)
+- **Learnings for future iterations:**
+  - Vault uses `Plug.Crypto.MessageEncryptor` with AES-256-GCM — nonces are random so same plaintext produces different ciphertexts
+  - `validate_response/2` and `normalize_answer/1` are private in AIScoring module — test indirectly via score_asset or expose if needed
+  - Prompt.user_prompt/3 accepts criteria as list of `%{id: _, label: _, q: _}` maps from Portfolio.stock_criteria/fii_criteria
+  - Both Vault and Prompt tests can be async: true since they don't touch the database
+---
+
+## 2026-03-27 - T05
+- Created 5 LiveView smoke test files: dashboard_live_test.exs (3 tests), class_detail_live_test.exs (4 tests), scoring_live_test.exs (3 tests), rebalance_live_test.exs (2 tests), settings_live_test.exs (3 tests) — 15 total
+- Each test mounts via `live(conn, path)` and asserts key elements via `has_element?`
+- Files changed: test/holder_web/live/{dashboard,class_detail,scoring,rebalance,settings}_live_test.exs (all new)
+- **Learnings for future iterations:**
+  - LiveView tests use `use HolderWeb.ConnCase` + `import Phoenix.LiveViewTest` — ConnCase setup provides conn and database sandbox
+  - The on_mount hook (HolderWeb.Hooks :default) auto-creates portfolio and assigns portfolio_id, so tests don't need explicit session setup
+  - Dashboard charts (pie-chart, bar-chart) only render when `@summary.grand_total > 0` — empty portfolios won't show canvas elements
+  - ClassDetailLive requires `:class` param in URL path (e.g., `/detail/acoes`) — mount pattern matches `%{"class" => class_key}`
+  - Pre-existing PageControllerTest failure continues (text assertion mismatch) — unrelated to LiveView tests
+---
+
+## 2026-03-27 - F4-01
+- Created `lib/holder/ai_scoring/provider.ex` with `@callback score/4`, `@callback test_connection/1`, `@callback name/0`
+- Updated `lib/holder/ai_scoring/gemini.ex` to declare `@behaviour Holder.AIScoring.Provider` and added `@impl true` annotations on `score/4`, `test_connection/1`, plus new `name/0 -> "Google Gemini"`
+- All existing logic preserved, 122 tests pass (1 pre-existing failure unrelated)
+- Files changed: lib/holder/ai_scoring/provider.ex (new), lib/holder/ai_scoring/gemini.ex (modified)
+- **Learnings for future iterations:**
+  - Gemini module already had `model/0` public function — `name/0` is the new Provider callback for display name
+  - The Provider behaviour is minimal: score/4, test_connection/1, name/0 — future providers just need these 3 functions
+  - `@impl true` annotations on callback implementations help with compile-time checking
+---
+
+## 2026-03-27 - F4-02
+- Refactored `Holder.AIScoring` orchestrator to use the Provider behaviour instead of manual case dispatch
+- Added `@providers` map (`%{"gemini" => Holder.AIScoring.Gemini}`) and `providers/0` public function
+- `resolve_provider/1` now returns `{:ok, module, api_key}` by looking up `@providers` map
+- `test_connection/2` uses `Map.fetch(@providers, ...)` instead of case dispatch
+- Removed `call_provider/5` — `score_asset/2` calls `module.score(...)` directly
+- Added `api_key_field/2` helper for provider-to-settings-field mapping
+- Updated `Settings.changeset/2` to validate `ai_provider` against `Map.keys(Holder.AIScoring.providers())`
+- Files changed: lib/holder/ai_scoring.ex, lib/holder/portfolio/settings.ex
+- **Learnings for future iterations:**
+  - `api_key_field/2` maps provider key to the settings field (e.g., "gemini" -> `settings.gemini_api_key_enc`) — new providers need a clause here
+  - Settings validation now uses `providers/0` dynamically — no need to update hardcoded list when adding providers
+  - SettingsLive calls `test_connection("gemini", enc_key)` directly — still works with the refactored version
+---
+
+## 2026-03-27 - F4-03
+- Added AI provider select dropdown to SettingsLive using `Holder.AIScoring.providers/0`
+- API key field now shown conditionally based on selected provider (`:if={@selected_provider == "gemini"}`)
+- Added `change_provider` event handler that saves selection to `settings.ai_provider`
+- Generalized `save_ai_key` and `test_ai_key` handlers to accept any provider key
+- Added `provider_key_field/1` and `provider_enc_key/2` helpers for provider-to-field mapping
+- Files changed: lib/holder_web/live/settings_live.ex, lib/holder_web/live/settings_live.html.heex
+- **Learnings for future iterations:**
+  - Can't mix keyword and arrow syntax in Elixir maps — use `Map.put(%{ai_provider: provider}, key_field, encrypted)` instead
+  - `@providers` map in AIScoring returns `%{"gemini" => Holder.AIScoring.Gemini}` — iterate with `for {key, module} <- @providers`
+  - Provider select uses `phx-change` on a wrapping form, not `phx-change` on the select itself (Phoenix requires form wrapper)
+  - Adding new providers requires: a clause in `provider_key_field/1`, `provider_enc_key/2`, and a `:if` block in the template
+---
+
+## 2026-03-27 - F3-01
+- Added horizontal tab bar to ClassDetailLive showing all enabled asset classes ordered by sort_order
+- Each tab has a colored dot + class label, using .tab-active/.tab-inactive CSS classes
+- Clicking a tab does push_patch to /detail/{class_key} (no full page reload)
+- Refactored mount to use `load_class/2` helper, added `handle_params/3` for patch navigation
+- Moved back arrow to top-left bar alongside display toggle button
+- Files changed: lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - ClassDetailLive uses `handle_params/3` for tab switching — `load_class/2` helper reloads class-specific assigns without remounting
+  - `@all_classes` is loaded once in mount; tabs iterate over it — future stories that add/remove classes should reload this assign
+  - The `.tab-active` and `.tab-inactive` CSS classes handle border-bottom styling — no need for custom active state logic
+---
+
+## 2026-03-27 - F3-02
+- Enhanced ClassDetailLive tabs with: asset count badge (small rounded number), Buy/Hold dot indicator based on macro_targets_map
+- Added '+' button at end of tab bar that toggles an inline glass-card form to create a new asset class (key, label, color picker, currency select)
+- On create, `all_classes` and tab indicators reload immediately so new tab appears without remount
+- Changeset errors shown inline (key validation, label required, duplicate key via portfolio_id constraint)
+- Files changed: lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - `create_asset_class/2` auto-assigns `sort_order` as max+1 — new classes appear at the end of the tab bar
+  - The unique constraint error for duplicate class keys appears on `:portfolio_id` field, not `:key` — display it separately
+  - `Ecto.Changeset.traverse_errors/2` is useful for extracting human-readable error messages from changesets
+  - `assign_tab_indicators/3` loads asset counts and macro targets — call it after any reload that might change counts
+  - The `reload/1` helper was updated to also refresh tab indicators (asset counts) after add/delete/update
+---
+
+## 2026-03-27 - F2-01
+- Replaced card-based asset listing in ClassDetailLive with a dense table
+- Non-RF columns: Ticker, Nome, Setor, Cotação, Qtd, Valor, % Atual, % Obj, Diff, Sinal (Buy/Hold), Nota
+- RF columns: Nome, Setor, Valor, % Atual, % Obj, Diff, Sinal, Liquidez
+- Added totals row (tfoot) with: asset count, total value, sum % Atual, sum % Obj
+- Nome, Setor, Diff columns hidden on screens < 768px using `hidden md:table-cell`
+- Added helper functions: `compute_signal/3`, `render_signal/1`, `format_pct_display/1`, `format_diff/1`, `compute_sum_pct_actual/3`, `compute_sum_target/1`
+- Files changed: lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - `render_signal/1` returns HEEx using `~H` sigil — requires `assigns = %{}` in scope even when not using assigns
+  - The colspan for inline edit rows must match the total column count (8 for RF, 11 for non-RF)
+  - Diff column shows +/- prefix for positive/negative values — useful visual cue for rebalancing
+  - Signal logic: Buy when target_pct > 0 AND % Atual < % Obj; Hold when target_pct > 0 AND % Atual >= % Obj; empty when target_pct == 0
+  - `hidden md:table-cell` is the Tailwind v4 pattern for responsive table column visibility
+---
