@@ -14,6 +14,9 @@ defmodule HolderWeb.ClassDetailLive do
      |> assign(:all_classes, all_classes)
      |> assign(:edit_id, nil)
      |> assign(:display_mode, :values)
+     |> assign(:show_new_class_form, false)
+     |> assign(:new_class_errors, %{})
+     |> assign_tab_indicators(portfolio.id, all_classes)
      |> load_class(class_key)}
   end
 
@@ -155,10 +158,71 @@ defmodule HolderWeb.ClassDetailLive do
     reload(socket)
   end
 
+  def handle_event("toggle_new_class_form", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_new_class_form, !socket.assigns.show_new_class_form)
+     |> assign(:new_class_errors, %{})}
+  end
+
+  def handle_event("create_class", params, socket) do
+    portfolio_id = socket.assigns.portfolio_id
+
+    attrs = %{
+      key: String.trim(params["key"] || ""),
+      label: String.trim(params["label"] || ""),
+      color: String.trim(params["color"] || "#64748b"),
+      currency: params["currency"] || "BRL"
+    }
+
+    case Portfolio.create_asset_class(portfolio_id, attrs) do
+      {:ok, _ac} ->
+        all_classes = Portfolio.list_asset_classes(portfolio_id)
+
+        {:noreply,
+         socket
+         |> assign(:all_classes, all_classes)
+         |> assign(:show_new_class_form, false)
+         |> assign(:new_class_errors, %{})
+         |> assign_tab_indicators(portfolio_id, all_classes)
+         |> put_flash(:info, gettext("Classe criada!"))}
+
+      {:error, changeset} ->
+        errors =
+          Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+            Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+              opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+            end)
+          end)
+
+        {:noreply, assign(socket, :new_class_errors, errors)}
+    end
+  end
+
   defp reload(socket) do
-    assets = Portfolio.list_assets(socket.assigns.portfolio_id, socket.assigns.class_key)
+    portfolio_id = socket.assigns.portfolio_id
+    assets = Portfolio.list_assets(portfolio_id, socket.assigns.class_key)
     total_value = compute_total(assets, socket.assigns.class_key)
-    {:noreply, socket |> assign(:assets, assets) |> assign(:total_value, total_value)}
+    all_classes = socket.assigns.all_classes
+
+    {:noreply,
+     socket
+     |> assign(:assets, assets)
+     |> assign(:total_value, total_value)
+     |> assign_tab_indicators(portfolio_id, all_classes)}
+  end
+
+  defp assign_tab_indicators(socket, portfolio_id, all_classes) do
+    targets_map = Portfolio.get_macro_targets_map(portfolio_id)
+
+    asset_counts =
+      Enum.into(all_classes, %{}, fn ac ->
+        {ac.key, length(Portfolio.list_assets(portfolio_id, ac.key))}
+      end)
+
+    socket
+    |> assign(:asset_counts, asset_counts)
+    |> assign(:macro_targets_map, targets_map)
   end
 
   defp compute_total(assets, "rendaFixa") do
