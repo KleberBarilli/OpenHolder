@@ -18,6 +18,8 @@ defmodule HolderWeb.ClassDetailLive do
      |> assign(:sort_dir, :asc)
      |> assign(:show_new_class_form, false)
      |> assign(:new_class_errors, %{})
+     |> assign(:show_add_form, false)
+     |> assign(:add_form_errors, %{})
      |> assign_tab_indicators(portfolio.id, all_classes)
      |> load_class(class_key)}
   end
@@ -57,6 +59,8 @@ defmodule HolderWeb.ClassDetailLive do
       |> assign(:total_value, total_value)
       |> assign(:sort_by, :sort_order)
       |> assign(:sort_dir, :asc)
+      |> assign(:show_add_form, false)
+      |> assign(:add_form_errors, %{})
       |> assign(:current_path, "/detail/#{class_key}")
     end
   end
@@ -127,33 +131,50 @@ defmodule HolderWeb.ClassDetailLive do
     {:noreply, socket |> assign(:edit_id, nil) |> put_flash(:info, gettext("Ativo salvo!"))}
   end
 
-  def handle_event("add_asset", _params, socket) do
+  def handle_event("toggle_add_form", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_add_form, !socket.assigns.show_add_form)
+     |> assign(:add_form_errors, %{})}
+  end
+
+  def handle_event("create_new_asset", params, socket) do
     class_key = socket.assigns.class_key
     config = socket.assigns.config
+    errors = validate_add_form(params, class_key)
 
-    attrs =
-      if class_key == "rendaFixa" do
-        %{
-          asset_class: class_key,
-          name: "Novo Ativo",
-          value: 0.0,
-          liquidity: "Boa",
-          currency: config.currency
-        }
-      else
-        %{
-          asset_class: class_key,
-          ticker: "NOVO",
-          sector: "",
-          qty: 0.0,
-          price: 0.0,
-          target_pct: 0.0,
-          currency: config.currency
-        }
-      end
+    if errors == %{} do
+      attrs =
+        if class_key == "rendaFixa" do
+          %{
+            asset_class: class_key,
+            name: String.trim(params["name"] || ""),
+            value: parse_float(params["value"]),
+            liquidity: params["liquidity"] || "Boa",
+            currency: config.currency
+          }
+        else
+          %{
+            asset_class: class_key,
+            ticker: String.trim(params["ticker"] || "") |> String.upcase(),
+            qty: parse_float(params["qty"]),
+            price: parse_float(params["price"]),
+            target_pct: parse_float(params["target_pct"]) / 100,
+            currency: config.currency
+          }
+        end
 
-    Portfolio.create_asset(socket.assigns.portfolio_id, attrs)
-    reload(socket)
+      Portfolio.create_asset(socket.assigns.portfolio_id, attrs)
+      {_, socket} = reload(socket)
+
+      {:noreply,
+       socket
+       |> assign(:show_add_form, false)
+       |> assign(:add_form_errors, %{})
+       |> put_flash(:info, gettext("Ativo adicionado!"))}
+    else
+      {:noreply, assign(socket, :add_form_errors, errors)}
+    end
   end
 
   def handle_event("delete_asset", %{"id" => id}, socket) do
@@ -270,6 +291,79 @@ defmodule HolderWeb.ClassDetailLive do
           end)
 
         {:noreply, assign(socket, :new_class_errors, errors)}
+    end
+  end
+
+  defp validate_add_form(params, "rendaFixa") do
+    errors = %{}
+    name = String.trim(params["name"] || "")
+
+    errors =
+      if name == "", do: Map.put(errors, :name, gettext("Nome é obrigatório")), else: errors
+
+    case Float.parse(params["value"] || "") do
+      {v, _} when v >= 0 -> errors
+      {_, _} -> Map.put(errors, :value, gettext("Valor não pode ser negativo"))
+      :error -> Map.put(errors, :value, gettext("Valor inválido"))
+    end
+  end
+
+  defp validate_add_form(params, _class_key) do
+    errors = %{}
+    ticker = String.trim(params["ticker"] || "")
+
+    errors =
+      if ticker == "", do: Map.put(errors, :ticker, gettext("Ticker é obrigatório")), else: errors
+
+    errors =
+      case Float.parse(params["qty"] || "") do
+        {v, _} when v >= 0 ->
+          errors
+
+        {_, _} ->
+          Map.put(errors, :qty, gettext("Quantidade não pode ser negativa"))
+
+        :error ->
+          if params["qty"] in [nil, ""],
+            do: errors,
+            else: Map.put(errors, :qty, gettext("Valor inválido"))
+      end
+
+    errors =
+      case Float.parse(params["price"] || "") do
+        {v, _} when v >= 0 ->
+          errors
+
+        {_, _} ->
+          Map.put(errors, :price, gettext("Cotação não pode ser negativa"))
+
+        :error ->
+          if params["price"] in [nil, ""],
+            do: errors,
+            else: Map.put(errors, :price, gettext("Valor inválido"))
+      end
+
+    case Float.parse(params["target_pct"] || "") do
+      {v, _} when v >= 0 and v <= 100 ->
+        errors
+
+      {_, _} ->
+        Map.put(errors, :target_pct, gettext("% Objetivo deve ser entre 0 e 100"))
+
+      :error ->
+        if params["target_pct"] in [nil, ""],
+          do: errors,
+          else: Map.put(errors, :target_pct, gettext("Valor inválido"))
+    end
+  end
+
+  defp parse_float(nil), do: 0.0
+  defp parse_float(""), do: 0.0
+
+  defp parse_float(str) do
+    case Float.parse(str) do
+      {v, _} -> v
+      :error -> 0.0
     end
   end
 

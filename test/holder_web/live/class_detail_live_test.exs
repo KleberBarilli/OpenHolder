@@ -22,7 +22,7 @@ defmodule HolderWeb.ClassDetailLiveTest do
     test "displays add asset button", %{conn: conn} do
       {:ok, view, _html} = live(conn, "/detail/acoes")
 
-      assert has_element?(view, "button[phx-click=add_asset]")
+      assert has_element?(view, "button[phx-click=toggle_add_form]")
     end
   end
 

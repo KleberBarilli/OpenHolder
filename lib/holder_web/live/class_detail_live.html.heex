@@ -349,6 +349,141 @@
           </tr>
         </thead>
         <tbody>
+          <%!-- Inline add-asset form --%>
+          <tr
+            :if={@show_add_form}
+            id="add-asset-form-row"
+            class="border-b border-accent-emerald/30 bg-accent-emerald/5"
+          >
+            <td colspan={if @class_key == "rendaFixa", do: "9", else: "12"} class="px-3 py-3">
+              <form id="add-asset-form" phx-submit="create_new_asset" class="space-y-3">
+                <p class="text-xs text-text-muted uppercase tracking-wider font-semibold">
+                  {gettext("Novo Ativo")}
+                </p>
+                <%= if @class_key == "rendaFixa" do %>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Nome")}
+                      </label>
+                      <input
+                        class="input-field w-full mt-1"
+                        name="name"
+                        placeholder={gettext("Nome do ativo")}
+                        required
+                      />
+                      <p :if={@add_form_errors[:name]} class="text-accent-rose text-xs mt-0.5">
+                        {@add_form_errors[:name]}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Valor")}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="input-field w-full mt-1"
+                        name="value"
+                        value="0"
+                      />
+                      <p :if={@add_form_errors[:value]} class="text-accent-rose text-xs mt-0.5">
+                        {@add_form_errors[:value]}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Liquidez")}
+                      </label>
+                      <select class="input-field w-full mt-1" name="liquidity">
+                        <option value="Boa">{gettext("Boa")}</option>
+                        <option value="Regular">{gettext("Regular")}</option>
+                        <option value="Baixa">{gettext("Baixa")}</option>
+                      </select>
+                    </div>
+                  </div>
+                <% else %>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Ticker")}
+                      </label>
+                      <input
+                        class="input-field w-full mt-1"
+                        name="ticker"
+                        placeholder="PETR4"
+                        required
+                      />
+                      <p :if={@add_form_errors[:ticker]} class="text-accent-rose text-xs mt-0.5">
+                        {@add_form_errors[:ticker]}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Qtd")}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        class="input-field w-full mt-1"
+                        name="qty"
+                        value="0"
+                      />
+                      <p :if={@add_form_errors[:qty]} class="text-accent-rose text-xs mt-0.5">
+                        {@add_form_errors[:qty]}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("Cotação")}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="input-field w-full mt-1"
+                        name="price"
+                        value="0"
+                      />
+                      <p :if={@add_form_errors[:price]} class="text-accent-rose text-xs mt-0.5">
+                        {@add_form_errors[:price]}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-text-muted uppercase">
+                        {gettext("% Objetivo")}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        class="input-field w-full mt-1"
+                        name="target_pct"
+                        value="0"
+                      />
+                      <p
+                        :if={@add_form_errors[:target_pct]}
+                        class="text-accent-rose text-xs mt-0.5"
+                      >
+                        {@add_form_errors[:target_pct]}
+                      </p>
+                    </div>
+                  </div>
+                <% end %>
+                <div class="flex items-center gap-2">
+                  <button type="submit" class="btn-primary text-xs flex items-center gap-1">
+                    <span class="hero-check-solid w-3 h-3" /> {gettext("Salvar")}
+                  </button>
+                  <button type="button" phx-click="toggle_add_form" class="btn-ghost text-xs">
+                    {gettext("Cancelar")}
+                  </button>
+                </div>
+              </form>
+            </td>
+          </tr>
           <%= for asset <- sorted_assets(assigns) do %>
             <% asset_total =
               if @class_key == "rendaFixa",
@@ -688,7 +823,7 @@
     </div>
   </div>
 
-  <button phx-click="add_asset" class="btn-ghost text-sm flex items-center gap-2">
+  <button phx-click="toggle_add_form" class="btn-ghost text-sm flex items-center gap-2">
     <span class="hero-plus-solid w-4 h-4" /> {gettext("Adicionar Ativo")}
   </button>
 </div>
