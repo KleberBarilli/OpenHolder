@@ -20,6 +20,7 @@ defmodule HolderWeb.ClassDetailLive do
      |> assign(:new_class_errors, %{})
      |> assign(:show_add_form, false)
      |> assign(:add_form_errors, %{})
+     |> assign(:all_tickers, Portfolio.list_all_tickers(portfolio.id))
      |> assign_tab_indicators(portfolio.id, all_classes)
      |> load_class(class_key)}
   end
@@ -377,6 +378,7 @@ defmodule HolderWeb.ClassDetailLive do
      socket
      |> assign(:assets, assets)
      |> assign(:total_value, total_value)
+     |> assign(:all_tickers, Portfolio.list_all_tickers(portfolio_id))
      |> assign_tab_indicators(portfolio_id, all_classes)}
   end
 

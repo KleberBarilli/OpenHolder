@@ -413,8 +413,13 @@
                         class="input-field w-full mt-1"
                         name="ticker"
                         placeholder="PETR4"
+                        list="ticker-suggestions"
+                        autocomplete="off"
                         required
                       />
+                      <datalist id="ticker-suggestions">
+                        <option :for={t <- @all_tickers} value={t} />
+                      </datalist>
                       <p :if={@add_form_errors[:ticker]} class="text-accent-rose text-xs mt-0.5">
                         {@add_form_errors[:ticker]}
                       </p>
