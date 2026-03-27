@@ -9,7 +9,8 @@ defmodule Holder.Portfolio do
     Asset,
     AssetScore,
     QuoteCache,
-    AssetClass
+    AssetClass,
+    ScoringCriterion
   }
 
   # ── Criteria constants ────────────────────────────────────
@@ -44,6 +45,34 @@ defmodule Holder.Portfolio do
 
   def stock_criteria, do: @stock_criteria
   def fii_criteria, do: @fii_criteria
+
+  def stock_criteria(portfolio_id) do
+    case list_criteria(portfolio_id, "stock") do
+      [] -> @stock_criteria
+      criteria -> criteria
+    end
+  end
+
+  def fii_criteria(portfolio_id) do
+    case list_criteria(portfolio_id, "fii") do
+      [] -> @fii_criteria
+      criteria -> criteria
+    end
+  end
+
+  def list_criteria(portfolio_id, criteria_type) do
+    Repo.all(
+      from sc in ScoringCriterion,
+        where:
+          sc.portfolio_id == ^portfolio_id and
+            sc.criteria_type == ^criteria_type and
+            sc.enabled == true,
+        order_by: sc.sort_order
+    )
+    |> Enum.map(fn sc ->
+      %{id: sc.key, label: sc.label, q: sc.label}
+    end)
+  end
 
   # ── Asset Classes (from database) ─────────────────────────
 
@@ -169,6 +198,35 @@ defmodule Holder.Portfolio do
     for cls <- @default_classes, cls.key not in existing do
       %AssetClass{}
       |> AssetClass.changeset(cls)
+      |> Ecto.Changeset.put_change(:portfolio_id, portfolio_id)
+      |> Repo.insert!()
+    end
+
+    ensure_default_criteria(portfolio_id)
+  end
+
+  def ensure_default_criteria(portfolio_id) do
+    existing =
+      Repo.all(
+        from sc in ScoringCriterion,
+          where: sc.portfolio_id == ^portfolio_id,
+          select: {sc.criteria_type, sc.key}
+      )
+      |> MapSet.new()
+
+    defaults = [{"stock", @stock_criteria}, {"fii", @fii_criteria}]
+
+    for {criteria_type, criteria} <- defaults,
+        {criterion, idx} <- Enum.with_index(criteria),
+        not MapSet.member?(existing, {criteria_type, criterion.id}) do
+      %ScoringCriterion{}
+      |> ScoringCriterion.changeset(%{
+        criteria_type: criteria_type,
+        key: criterion.id,
+        label: criterion.label,
+        sort_order: idx,
+        enabled: true
+      })
       |> Ecto.Changeset.put_change(:portfolio_id, portfolio_id)
       |> Repo.insert!()
     end
