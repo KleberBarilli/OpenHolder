@@ -258,6 +258,59 @@ defmodule HolderWeb.ClassDetailLive do
   defp criteria_for("fiis"), do: Portfolio.fii_criteria()
   defp criteria_for(_), do: []
 
+  defp compute_signal(target_pct, pct_actual_display, target_pct_display) do
+    cond do
+      target_pct == 0.0 -> nil
+      pct_actual_display < target_pct_display -> :buy
+      true -> :hold
+    end
+  end
+
+  defp render_signal(nil), do: ""
+
+  defp render_signal(:buy) do
+    assigns = %{}
+
+    ~H"""
+    <span class="badge-buy text-[10px]">Buy</span>
+    """
+  end
+
+  defp render_signal(:hold) do
+    assigns = %{}
+
+    ~H"""
+    <span class="badge-hold text-[10px]">Hold</span>
+    """
+  end
+
+  defp format_pct_display(value) do
+    :erlang.float_to_binary(value / 1, decimals: 1) <> "%"
+  end
+
+  defp format_diff(value) do
+    prefix = if value > 0, do: "+", else: ""
+    prefix <> :erlang.float_to_binary(value / 1, decimals: 1) <> "%"
+  end
+
+  defp compute_sum_pct_actual(assets, total_value, class_key) do
+    Enum.reduce(assets, 0.0, fn asset, acc ->
+      asset_total =
+        if class_key == "rendaFixa",
+          do: asset.value || 0.0,
+          else: (asset.qty || 0.0) * (asset.price || 0.0)
+
+      pct = if total_value > 0, do: asset_total / total_value * 100, else: 0.0
+      acc + pct
+    end)
+  end
+
+  defp compute_sum_target(assets) do
+    Enum.reduce(assets, 0.0, fn asset, acc ->
+      acc + (asset.target_pct || 0.0) * 100
+    end)
+  end
+
   defp display_label(:values), do: "R$"
   defp display_label(:percent), do: "%"
   defp display_label(:hidden), do: gettext("Oculto")
