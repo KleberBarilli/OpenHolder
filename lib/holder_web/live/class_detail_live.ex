@@ -52,12 +52,16 @@ defmodule HolderWeb.ClassDetailLive do
 
       total_value = compute_total(assets, class_key)
 
+      active_criteria = criteria_for(class_key, portfolio_id)
+      active_criteria_ids = Enum.map(active_criteria, & &1.id)
+
       socket
       |> assign(:class_key, class_key)
       |> assign(:config, config)
       |> assign(:assets, assets)
       |> assign(:fmt, fmt)
       |> assign(:total_value, total_value)
+      |> assign(:active_criteria_ids, active_criteria_ids)
       |> assign(:sort_by, :sort_order)
       |> assign(:sort_dir, :asc)
       |> assign(:show_add_form, false)
@@ -424,9 +428,9 @@ defmodule HolderWeb.ClassDetailLive do
   defp mask(_value, _fmt, pct, :percent) when not is_nil(pct), do: Portfolio.format_pct(pct)
   defp mask(value, fmt, _pct, _mode), do: fmt.(value)
 
-  defp criteria_for("acoes"), do: Portfolio.stock_criteria()
-  defp criteria_for("fiis"), do: Portfolio.fii_criteria()
-  defp criteria_for(_), do: []
+  defp criteria_for("acoes", portfolio_id), do: Portfolio.stock_criteria(portfolio_id)
+  defp criteria_for("fiis", portfolio_id), do: Portfolio.fii_criteria(portfolio_id)
+  defp criteria_for(_, _portfolio_id), do: []
 
   defp compute_signal(target_pct, pct_actual_display, target_pct_display) do
     cond do
@@ -488,7 +492,11 @@ defmodule HolderWeb.ClassDetailLive do
     class_key = assigns.class_key
     total_value = assigns.total_value
 
-    sort_assets(assets, sort_by, sort_dir, class_key, total_value)
+    if sort_by == :nota do
+      sort_assets(assets, :nota, sort_dir, class_key, total_value, assigns.active_criteria_ids)
+    else
+      sort_assets(assets, sort_by, sort_dir, class_key, total_value)
+    end
   end
 
   defp sort_assets(assets, :sort_order, :asc, _class_key, _total_value), do: assets
@@ -532,11 +540,11 @@ defmodule HolderWeb.ClassDetailLive do
     )
   end
 
-  defp sort_assets(assets, :nota, dir, _class_key, _total_value) do
+  defp sort_assets(assets, :nota, dir, _class_key, _total_value, active_criteria_ids) do
     Enum.sort_by(
       assets,
       fn a ->
-        score = Portfolio.compute_score(a)
+        score = Portfolio.compute_score(a, active_criteria_ids)
         if is_integer(score), do: score, else: -999
       end,
       sort_comparator(dir)

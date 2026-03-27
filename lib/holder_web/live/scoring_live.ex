@@ -46,7 +46,11 @@ defmodule HolderWeb.ScoringLive do
     {:noreply, assign(socket, :expanded_id, new_id)}
   end
 
-  def handle_event("set_score", %{"asset-id" => asset_id, "criterion" => criterion_id, "val" => val}, socket) do
+  def handle_event(
+        "set_score",
+        %{"asset-id" => asset_id, "criterion" => criterion_id, "val" => val},
+        socket
+      ) do
     asset_id = String.to_integer(asset_id)
     new_val = String.to_integer(val)
     current = Map.get(Portfolio.get_scores_map(asset_id), criterion_id, 0)
@@ -107,7 +111,9 @@ defmodule HolderWeb.ScoringLive do
 
     socket =
       case result do
-        {:ok, _} -> socket
+        {:ok, _} ->
+          socket
+
         {:error, reason} ->
           asset = Enum.find(assets, &(&1.id == asset_id))
           ticker = if asset, do: asset.ticker, else: "##{asset_id}"
@@ -136,7 +142,10 @@ defmodule HolderWeb.ScoringLive do
      |> assign(:assets, assets)
      |> assign(:ai_loading, MapSet.new())
      |> assign(:ai_batch_progress, %{summary | done: true})
-     |> put_flash(:info, gettext("%{ok}/%{total} ativos pontuados com IA", ok: summary.ok, total: summary.total))}
+     |> put_flash(
+       :info,
+       gettext("%{ok}/%{total} ativos pontuados com IA", ok: summary.ok, total: summary.total)
+     )}
   end
 
   defp format_error(:no_provider_configured), do: gettext("Provedor de IA não configurado")
@@ -149,13 +158,13 @@ defmodule HolderWeb.ScoringLive do
   defp format_error(msg) when is_binary(msg), do: msg
   defp format_error(other), do: inspect(other)
 
-  defp criteria_for("acoes"), do: Portfolio.stock_criteria()
-  defp criteria_for("fiis"), do: Portfolio.fii_criteria()
-  defp criteria_for(_), do: []
+  defp criteria_for("acoes", portfolio_id), do: Portfolio.stock_criteria(portfolio_id)
+  defp criteria_for("fiis", portfolio_id), do: Portfolio.fii_criteria(portfolio_id)
+  defp criteria_for(_, _portfolio_id), do: []
 
-  defp score_distribution(assets) do
+  defp score_distribution(assets, active_criteria_ids) do
     Enum.reduce(assets, %{excellent: 0, good: 0, weak: 0}, fn asset, acc ->
-      score = Portfolio.compute_score(asset)
+      score = Portfolio.compute_score(asset, active_criteria_ids)
 
       cond do
         score == "SN" -> acc

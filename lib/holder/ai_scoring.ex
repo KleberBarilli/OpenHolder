@@ -26,9 +26,11 @@ defmodule Holder.AIScoring do
     result =
       with {:ok, module, api_key} <- resolve_provider(settings) do
         criteria_type = criteria_type_for(asset.asset_class)
-        criteria = criteria_for(criteria_type)
+        criteria = criteria_for(criteria_type, asset.portfolio_id)
 
-        Logger.info("AI Scoring: calling #{module.name()} for #{asset.ticker} (#{criteria_type}, #{length(criteria)} criteria)")
+        Logger.info(
+          "AI Scoring: calling #{module.name()} for #{asset.ticker} (#{criteria_type}, #{length(criteria)} criteria)"
+        )
 
         case module.score(asset.ticker, criteria_type, criteria, api_key) do
           {:ok, raw} ->
@@ -37,16 +39,26 @@ defmodule Holder.AIScoring do
             case validate_response(raw, criteria) do
               {:ok, validated} ->
                 persist_scores(asset.id, validated)
-                Logger.info("AI Scoring: #{asset.ticker} scored #{validated.total}/#{map_size(validated.scores)}")
+
+                Logger.info(
+                  "AI Scoring: #{asset.ticker} scored #{validated.total}/#{map_size(validated.scores)}"
+                )
+
                 {:ok, validated}
 
               {:error, reason} = err ->
-                Logger.error("AI Scoring: validation failed for #{asset.ticker}: #{inspect(reason)}")
+                Logger.error(
+                  "AI Scoring: validation failed for #{asset.ticker}: #{inspect(reason)}"
+                )
+
                 err
             end
 
           {:error, reason} = err ->
-            Logger.error("AI Scoring: provider call failed for #{asset.ticker}: #{inspect(reason)}")
+            Logger.error(
+              "AI Scoring: provider call failed for #{asset.ticker}: #{inspect(reason)}"
+            )
+
             err
         end
       else
@@ -184,7 +196,7 @@ defmodule Holder.AIScoring do
   defp criteria_type_for(class) when class in ["fiis", "reits"], do: "fii"
   defp criteria_type_for(_), do: "stock"
 
-  defp criteria_for("stock"), do: Portfolio.stock_criteria()
-  defp criteria_for("fii"), do: Portfolio.fii_criteria()
-  defp criteria_for(_), do: Portfolio.stock_criteria()
+  defp criteria_for("stock", portfolio_id), do: Portfolio.stock_criteria(portfolio_id)
+  defp criteria_for("fii", portfolio_id), do: Portfolio.fii_criteria(portfolio_id)
+  defp criteria_for(_, portfolio_id), do: Portfolio.stock_criteria(portfolio_id)
 end

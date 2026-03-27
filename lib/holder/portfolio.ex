@@ -513,6 +513,23 @@ defmodule Holder.Portfolio do
     end
   end
 
+  @doc """
+  Computes score considering only active criteria IDs.
+  Scores for disabled/removed criteria are ignored.
+  """
+  def compute_score(asset, active_criteria_ids) do
+    scores = asset.asset_scores || []
+
+    filtered =
+      Enum.filter(scores, fn s -> s.criterion_id in active_criteria_ids end)
+
+    if Enum.empty?(filtered) do
+      "SN"
+    else
+      filtered |> Enum.map(& &1.value) |> Enum.sum()
+    end
+  end
+
   # ── Quotes Cache ──────────────────────────────────────────
 
   def upsert_quote(ticker, price, currency \\ "BRL") do

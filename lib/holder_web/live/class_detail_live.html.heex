@@ -498,7 +498,7 @@
             <% target_pct_display = (asset.target_pct || 0.0) * 100 %>
             <% pct_actual_display = pct_actual * 100 %>
             <% diff = target_pct_display - pct_actual_display %>
-            <% score = Portfolio.compute_score(asset) %>
+            <% score = Portfolio.compute_score(asset, @active_criteria_ids) %>
             <% signal =
               compute_signal(asset.target_pct || 0.0, pct_actual_display, target_pct_display) %>
 
