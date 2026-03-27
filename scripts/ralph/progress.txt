@@ -24,6 +24,7 @@ Started: Fri Mar 27 14:14:43 UTC 2026
 - `Portfolio.list_all_tickers/1` returns distinct tickers across all classes — useful for autocomplete/datalist features
 - `ScoringCriterion` schema stores criteria in DB — use `stock_criteria(portfolio_id)` / `fii_criteria(portfolio_id)` for dynamic criteria, `/0` variants for backward compat
 - `list_all_criteria/2` returns ALL criteria (including disabled) for management UIs; `list_criteria/2` returns only enabled for scoring/display
+- Use `Portfolio.compute_score(asset, active_criteria_ids)` to respect enabled/disabled criteria — `/1` variant sums all scores regardless
 - In LiveView modules, ALL `handle_event/3` clauses must be grouped together — don't interleave private functions between them
 ---
 
@@ -265,4 +266,19 @@ Started: Fri Mar 27 14:14:43 UTC 2026
   - `handle_event` clauses must be grouped together in LiveView modules — don't put private functions between them or you'll get --warnings-as-errors failures
   - `ScoringCriterion.changeset` validates key format `^[a-zA-Z][a-zA-Z0-9_]*$` — the UI also sanitizes input before submission
   - The unique constraint on `[portfolio_id, criteria_type, key]` catches duplicate keys — traverse_errors extracts the message for display
+---
+
+## 2026-03-27 - F5-03
+- Updated ScoringLive and ClassDetailLive to read criteria from DB via `Portfolio.stock_criteria(portfolio_id)` / `fii_criteria(portfolio_id)` instead of hardcoded zero-arity variants
+- Updated AIScoring orchestrator to fetch criteria dynamically using `asset.portfolio_id`
+- Added `Portfolio.compute_score/2` that filters scores by active criteria IDs — disabled/removed criteria scores stay in DB but are not counted
+- Updated ScoringLive template: `score_distribution` and `compute_score` now use active criteria IDs; criteria reference panel and dots show only enabled criteria
+- Updated ClassDetailLive: `active_criteria_ids` assign loaded in `load_class/2`, score column and sort-by-nota use filtered scoring
+- Prompt.user_prompt/3 already accepted dynamic criteria — added graceful fallback for custom criteria (`cr[:q] || cr[:label]`)
+- Files changed: lib/holder/portfolio.ex, lib/holder/ai_scoring.ex, lib/holder/ai_scoring/prompt.ex, lib/holder_web/live/scoring_live.ex, lib/holder_web/live/scoring_live.html.heex, lib/holder_web/live/class_detail_live.ex, lib/holder_web/live/class_detail_live.html.heex
+- **Learnings for future iterations:**
+  - `compute_score/2` accepts `active_criteria_ids` list — use it whenever displaying scores to respect enabled/disabled criteria state
+  - Asset schema has `portfolio_id` via `belongs_to :portfolio` — AIScoring can access it as `asset.portfolio_id` without extra lookups
+  - Prompt module's `@stock_questions`/`@fii_questions` maps serve as detailed English question overrides for known criterion IDs — custom criteria fall back to their label as the question text
+  - When sorting by `:nota` in ClassDetailLive, extra arg `active_criteria_ids` is needed — handled via special case in `sorted_assets/1`
 ---

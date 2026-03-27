@@ -133,7 +133,7 @@
       "id": "F5-03",
       "title": "Scoring e AI Prompt dinamicos com criterios do banco",
       "priority": 19,
-      "passes": false,
+      "passes": true,
       "requirements": "Update ScoringLive and ClassDetailLive to read criteria from DB (via Portfolio.stock_criteria/1 and fii_criteria/1 with portfolio_id). Update AIScoring.Prompt to accept dynamic criteria list instead of hardcoded constants. Scores for removed/disabled criteria stay in DB but are not shown in UI. compute_score/1 only sums scores for active criteria. Prompt.user_prompt/3 builds questions from the criteria list dynamically. Run mix precommit."
     }
   ]
